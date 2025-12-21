@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Liste</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    background-color: white;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Sayfanın tam yüksekliğini alması için */
+  }
+  .header {
+    background-color: #333;
+    padding: 15px 0;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+  }
+  .container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(auto, auto);
+    grid-gap: 3px;
+    padding: 3px;
+    box-sizing: border-box;
+    flex-grow: 1; /* Kalan alanı doldurması için */
+  }
+  .button-container {
+    display: flex;
+    flex-direction: column;
+  }
+  .big-button {
+    background-color: #555; //#555
+    border: 1px solid #777;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    cursor: pointer;
+    text-align: center;
+    color: white;
+    height: 100px;
+  }
+  .small-button {
+    background-color: #777; //#777
+    border: 1px solid #999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    color: white;
+    height: 8px;
+    padding: 8px 12px; /* Biraz daha geniş ve yüksek iç boşluk */
+    margin-top: -8px; /* Küçük butonları yukarı kaydır */
+    min-width: 20px; /* Minimum genişlik */
+  }
+  #input-area {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #444;
+    border: 1px solid #777;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 3;
+  }
+  #input-area input[type="text"] {
+    padding: 10px;
+    font-size: 16px;
+    background-color: #333;
+    color: white;
+    border: 1px solid #777;
+  }
+  #input-area button {
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #666;
+    color: white;
+    border: 1px solid #777;
+  }
+  .filled {
+    background-color: green;
+    color: white;
+    font-weight: bold;
+  }
+  .double-clicked {
+    background-color: red;
+    color: white;
+    font-weight: bold;
+  }
+  .special-button {
+    font-size: 17px;
+    font-weight: bold;
+    background-color: darkred;
+    color: white;
+    height: 40px;
+    display: flex; /* Flexbox'ı etkinleştir */
+    justify-content: center; /* Yatayda ortala */
+    align-items: center; /* Dikeyde ortala */
+  }
+  #delete-button {
+    background-color: darkred;
+    color: white;
+  }
+  .dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  .dropdown-content {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white; // #f9f9f9
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 2;
+  }
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    text-align: center;
+  }
+  .dropdown-content a:hover {background-color: #ddd;}
+  #share-import-button {
+    background-color: #808080;
+    color: white;
+  }
+  #data-input-area {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #444;
+    border: 1px solid #777;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 3;
+  }
+  #data-input-area input[type="text"] {
+    padding: 10px;
+    font-size: 16px;
+    background-color: #333;
+    color: white;
+    border: 1px solid #777;
+  }
+  #data-input-area button {
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #666;
+    color: white;
+    border: 1px solid #777;
+  }
+  .data-input-buttons {
+    display: flex;
+    justify-content: space-around;
+  }
+  .total-area {
+    background-color: #333;
+    color: lightgreen;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  #total-value {
+    font-size: 24px;
+  }
+  #json-input-area {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #444;
+    border: 1px solid #777;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 3;
+  }
+  #json-input-area textarea {
+    padding: 10px;
+    font-size: 16px;
+    background-color: #333;
+    color: white;
+    border: 1px solid #777;
+  }
+  #json-input-area button {
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #666;
+    color: white;
+    border: 1px solid #777;
+  }
+    .turquoise-button {
+    background-color: darkgreen; /* koyu yeşil rengi */
+    color: white; /* Yazı rengi okunabilir olsun */
+  }
+    #new-turquoise-button {
+    grid-column: span 4; /* Yeni butonun 4 sütunu kaplamasını sağla */
+  }
+    .json-input-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px; /* Butonlar arasına boşluk */
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">LİSTE</div>
+
+  <div class="container">
+    <div class="button special-button turquoise-button" id="new-turquoise-button">LİSTE OLUŞTUR</div>
+
+    <div class="button special-button" id="write-button">YAZ</div>
+    <div class="button special-button" id="edit-button">DEĞİŞTİR</div>
+    <div class="button special-button" id="delete-button">SİL</div>
+    <div class="dropdown">
+      <button class="button special-button" id="share-import-button">LİSTE AL-VER</button>
+      <div id="share-import-menu" class="dropdown-content">
+        <a href="#" id="share-option">Liste Gönder</a>
+        <a href="#" id="import-option">Liste Al</a>
+        </div>
+    </div>
+    <div class="button-container" data-index="0">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="1">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="2">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="3">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="4">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="5">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="6">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="7">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="8">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="9">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="10">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="11">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="12">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="13">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="14">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="15">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="16">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="17">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="18">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="19">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="20">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="21">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="22">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+    <div class="button-container" data-index="23">
+      <div class="big-button"></div>
+      <div class="small-button"></div>
+    </div>
+  </div>
+
+  <div class="total-area">
+    <div>Toplam:</div>
+    <div id="total-value">0</div>
+  </div>
+
+  <div id="input-area">
+    <input type="text" id="text-input" placeholder="Yeni yazıyı buraya girin">
+    <button id="submit-button">Tamam</button>
+  </div>
+
+  <div id="data-input-area">
+    <input type="text" id="data-text-input" placeholder="Veri girin (isteğe bağlı)">
+    <div class="data-input-buttons">
+      <button id="data-submit-button">Tamam</button>
+      <button id="data-cancel-button">İptal</button>
+    </div>
+  </div>
+
+  <div id="json-input-area" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #444; border: 1px solid #777; padding: 20px; flex-direction: column; gap: 10px; z-index: 3;">
+    <textarea id="json-paste-area" rows="10" placeholder="Listenizi Alt Alta Olacak Şekilde Yazınız!"></textarea>
+    <div class="json-input-buttons"> <button id="json-add-button">Listeye Ekle</button>
+      <button id="json-cancel-button">İptal</button> </div>
+  </div>
+
+  <script>
+    const writeButton = document.getElementById('write-button');
+    const editButton = document.getElementById('edit-button');
+    const deleteButton = document.getElementById('delete-button');
+    const shareImportButton = document.getElementById('share-import-button');
+    const shareImportMenu = document.getElementById('share-import-menu');
+    const shareOption = document.getElementById('share-option');
+    const importOption = document.getElementById('import-option');
+    const inputArea = document.getElementById('input-area');
+    const textInput = document.getElementById('text-input');
+    const submitButton = document.getElementById('submit-button');
+    const bigButtons = document.querySelectorAll('.container .button-container .big-button');
+    const smallButtons = document.querySelectorAll('.container .button-container .small-button');
+    const dataInputArea = document.getElementById('data-input-area');
+    const dataTextInput = document.getElementById('data-text-input');
+    const dataSubmitButton = document.getElementById('data-submit-button');
+    const dataCancelButton = document.getElementById('data-cancel-button');
+    const buttonContainers = document.querySelectorAll('.container .button-container');
+    const totalValueElement = document.getElementById('total-value');
+    const addWithJsonOption = document.getElementById('add-with-json');
+    const jsonInputArea = document.getElementById('json-input-area');
+    const jsonPasteArea = document.getElementById('json-paste-area');
+    const jsonAddButton = document.getElementById('json-add-button');
+    const newTurquoiseButton = document.getElementById('new-turquoise-button'); // Yeni buton referansı
+    const jsonCancelButton = document.getElementById('json-cancel-button'); // Yeni İptal butonu referansı
+
+    let buttonIndex = localStorage.getItem('buttonIndex') ? parseInt(localStorage.getItem('buttonIndex')) : 0;
+    let isEditMode = false;
+    let selectedEditButton = null;
+    let isShareImportMenuOpen = false;
+    let selectedBigButtonIndexForData = -1;
+
+    function calculateTotal() {
+      let total = 0;
+      smallButtons.forEach(button => {
+        const value = parseFloat(button.textContent.replace(',', '.')); // Virgülü noktaya çevir ve ondalıklı sayı olarak oku
+        if (!isNaN(value)) {
+          total += value;
+        }
+      });
+      totalValueElement.textContent = total.toFixed(2); // İsteğe bağlı olarak sonucu iki ondalık basamakla göster
+    }
+
+    window.onload = () => {
+      for (let i = 0; i < bigButtons.length; i++) {
+        const bigButtonText = localStorage.getItem(`bigButtonText_${i}`);
+        const bigButtonClass = localStorage.getItem(`bigButtonClass_${i}`);
+        const smallButtonText = localStorage.getItem(`smallButtonText_${i}`);
+
+        if (bigButtonText) {
+          bigButtons[i].textContent = bigButtonText;
+        }
+        if (bigButtonClass) {
+          bigButtons[i].className = `big-button ${bigButtonClass}`;
+        }
+        if (smallButtonText) {
+          smallButtons[i].textContent = smallButtonText;
+        }
+      }
+      buttonIndex = localStorage.getItem('buttonIndex') ? parseInt(localStorage.getItem('buttonIndex')) : 0;
+      calculateTotal(); // Sayfa yüklendiğinde ilk toplamı hesapla
+    };
+
+    writeButton.addEventListener('click', () => {
+      inputArea.style.display = 'flex';
+      textInput.placeholder = 'Yazınızı buraya girin';
+      isEditMode = false;
+      selectedEditButton = null;
+    });
+
+    submitButton.addEventListener('click', () => {
+      const textToWrite = textInput.value.trim();
+      inputArea.style.display = 'none';
+      textInput.value = '';
+
+      if (!isEditMode) {
+        if (textToWrite && buttonIndex < bigButtons.length) {
+          bigButtons[buttonIndex].textContent = textToWrite;
+          bigButtons[buttonIndex].className = 'big-button filled';
+          localStorage.setItem(`bigButtonText_${buttonIndex}`, textToWrite);
+          localStorage.setItem(`bigButtonClass_${buttonIndex}`, 'filled');
+          localStorage.setItem('buttonIndex', buttonIndex + 1);
+          buttonIndex++;
+        } else if (buttonIndex >= bigButtons.length) {
+          alert('Bütün liste butonları doldu!');
+        }
+      } else if (selectedEditButton) {
+        selectedEditButton.textContent = textToWrite;
+        const index = Array.from(bigButtons).indexOf(selectedEditButton);
+        localStorage.setItem(`bigButtonText_${index}`, textToWrite);
+        selectedEditButton = null;
+        isEditMode = false;
+        textInput.placeholder = 'Yazınızı buraya girin';
+      }
+    });
+
+    buttonContainers.forEach((container, index) => {
+      const bigButton = container.querySelector('.big-button');
+      const smallButton = container.querySelector('.small-button');
+
+      bigButton.addEventListener('click', () => {
+        if (isEditMode && bigButton.textContent) {
+          selectedEditButton = bigButton;
+          textInput.value = selectedEditButton.textContent;
+          textInput.placeholder = 'Yeni yazıyı buraya girin';
+          inputArea.style.display = 'flex';
+        }
+      });
+
+      bigButton.addEventListener('dblclick', () => {
+        if (bigButton.textContent) {
+          if (bigButton.classList.contains('filled')) {
+            bigButton.classList.remove('filled');
+            bigButton.classList.add('double-clicked');
+            localStorage.setItem(`bigButtonClass_${index}`, 'double-clicked');
+            dataInputArea.style.display = 'flex';
+            selectedBigButtonIndexForData = index;
+          } else if (bigButton.classList.contains('double-clicked')) {
+            bigButton.classList.remove('double-clicked');
+            bigButton.classList.add('filled');
+            localStorage.setItem(`bigButtonClass_${index}`, 'filled');
+            dataInputArea.style.display = 'none';
+            dataTextInput.value = '';
+            localStorage.removeItem(`smallButtonText_${index}`);
+            smallButton.textContent = '';
+            calculateTotal(); // Toplamı güncelle
+          } else {
+            bigButton.classList.add('double-clicked');
+            localStorage.setItem(`bigButtonClass_${index}`, 'double-clicked');
+            dataInputArea.style.display = 'flex';
+            selectedBigButtonIndexForData = index;
+          }
+        }
+      });
+    });
+
+    dataSubmitButton.addEventListener('click', () => {
+      if (selectedBigButtonIndexForData !== -1) {
+        const dataToWrite = dataTextInput.value.trim();
+        smallButtons[selectedBigButtonIndexForData].textContent = dataToWrite;
+        localStorage.setItem(`smallButtonText_${selectedBigButtonIndexForData}`, dataToWrite);
+        dataInputArea.style.display = 'none';
+        dataTextInput.value = '';
+        selectedBigButtonIndexForData = -1;
+        calculateTotal(); // Toplamı güncelle
+      }
+    });
+
+    dataCancelButton.addEventListener('click', () => {
+      dataInputArea.style.display = 'none';
+      dataTextInput.value = '';
+      selectedBigButtonIndexForData = -1;
+    });
+
+    editButton.addEventListener('click', () => {
+      isEditMode = !isEditMode;
+      if (isEditMode) {
+        alert('Değiştirmek istediğiniz kısma tıklayın.');
+      } else {
+        alert('Değiştirme modu kapatıldı.');
+      }
+      selectedEditButton = null;
+    });
+
+    deleteButton.addEventListener('click', () => {
+      if (confirm('Emin misiniz? Bütün liste temizlenecek!')) {
+        for (let i = 0; i < bigButtons.length; i++) {
+          bigButtons[i].textContent = '';
+          bigButtons[i].className = 'big-button';
+          smallButtons[i].textContent = '';
+          localStorage.removeItem(`bigButtonText_${i}`);
+          localStorage.removeItem(`bigButtonClass_${i}`);
+          localStorage.removeItem(`smallButtonText_${i}`);
+        }
+        buttonIndex = 0;
+        localStorage.setItem('buttonIndex', 0);
+        calculateTotal(); // Toplamı sıfırla
+      }
+    });
+
+    shareImportButton.addEventListener('click', () => {
+      isShareImportMenuOpen = !isShareImportMenuOpen;
+      shareImportMenu.style.display = isShareImportMenuOpen ? 'block' : 'none';
+    });
+
+    shareOption.addEventListener('click', () => {
+      let dataToShare = [];
+      for (let i = 0; i < bigButtons.length; i++) {
+        dataToShare.push({
+          bigButtonText: bigButtons[i].textContent,
+          bigButtonClass: bigButtons[i].className,
+          smallButtonText: smallButtons[i].textContent
+        });
+      }
+      const jsonData = JSON.stringify(dataToShare);
+      const shareText = `Alışveriş Listesi (Büyük/Küçük Butonlar):\n${jsonData}`;
+      navigator.share({
+        title: 'Alışveriş Listesi (Büyük/Küçük Butonlar)',
+        text: shareText
+      }).catch((error) => {
+        prompt('Listeyi kopyalayıp paylaşabilirsiniz:', shareText);
+      });
+      isShareImportMenuOpen = false;
+      shareImportMenu.style.display = 'none';
+    });
+
+    importOption.addEventListener('click', () => {
+      const importedData = prompt('Paylaşılan listeyi buraya yapıştırın:');
+      if (importedData) {
+        let jsonData = importedData.trim();
+        if (jsonData.startsWith('Alışveriş Listesi (Büyük/Küçük Butonlar):')) {
+          jsonData = jsonData.substring('Alışveriş Listesi (Büyük/Küçük Butonlar):'.length).trim();
+        }
+        try {
+          const parsedData = JSON.parse(jsonData);
+          if (Array.isArray(parsedData)) {
+            let importCount = 0;
+            for (let i = 0; i < bigButtons.length; i++) {
+              if (importCount < parsedData.length) {
+                if (!bigButtons[i].textContent) {
+                  bigButtons[i].textContent = parsedData[importCount].bigButtonText || '';
+                  bigButtons[i].className = `big-button ${parsedData[importCount].bigButtonClass || ''}`.trim();
+                  smallButtons[i].textContent = parsedData[importCount].smallButtonText || '';
+                  localStorage.setItem(`bigButtonText_${i}`, parsedData[importCount].bigButtonText || '');
+                  localStorage.setItem(`bigButtonClass_${i}`, parsedData[importCount].bigButtonClass || '');
+                  localStorage.setItem(`smallButtonText_${i}`, parsedData[importCount].smallButtonText || '');
+                  importCount++;
+                }
+              } else {
+                break; // Bütün import edilenler eklendi, döngüden çık
+              }
+            }
+            // Sayfadaki tüm butonları kontrol ederek buttonIndex'i güncelle
+            let filledCount = 0;
+            for (let i = 0; i < bigButtons.length; i++) {
+              if (bigButtons[i].textContent) {
+                filledCount++;
+              }
+            }
+            buttonIndex = filledCount;
+            localStorage.setItem('buttonIndex', buttonIndex);
+            calculateTotal(); // İçe aktırma sonrası toplamı güncelle
+            alert('Liste başarıyla alındı ve mevcut listenize eklendi!');
+          } else {
+            alert('Geçersiz liste formatı!');
+          }
+        } catch (error) {
+          alert('Geçersiz liste formatı!');
+        }
+      }
+      isShareImportMenuOpen = false;
+      shareImportMenu.style.display = 'none';
+    });
+
+    // addWithJsonOption.addEventListener('click', () => { // Bu event listener kaldırıldı veya yorum satırı yapıldı
+    //   jsonInputArea.style.display = 'flex';
+    //   isShareImportMenuOpen = false;
+    //   shareImportMenu.style.display = 'none';
+    // });
+
+    // Yeni butonun event listener'ı
+    newTurquoiseButton.addEventListener('click', () => {
+      jsonInputArea.style.display = 'flex'; // JSON giriş alanını göster
+      isShareImportMenuOpen = false; // Liste Al-Ver menüsünü kapat (eğer açıksa)
+      shareImportMenu.style.display = 'none'; // Liste Al-Ver menüsünü gizle (eğer açıksa)
+    });
+
+    // JSON İptal butonu event listener'ı
+    jsonCancelButton.addEventListener('click', () => {
+      jsonInputArea.style.display = 'none'; // JSON giriş alanını gizle
+      jsonPasteArea.value = ''; // Metin alanını temizle
+    });
+
+
+    function addItemsWithJson() {
+      const inputText = jsonPasteArea.value.trim();
+      if (inputText) {
+        const lines = inputText.split('\n');
+        const parsedData = lines.map(line => ({
+          bigButtonText: line.trim(),
+          bigButtonClass: 'big-button filled',
+          smallButtonText: ''
+        }));
+
+        let importCount = 0;
+        for (let i = 0; i < bigButtons.length; i++) {
+          if (importCount < parsedData.length) {
+            if (!bigButtons[i].textContent) {
+              bigButtons[i].textContent = parsedData[importCount].bigButtonText || '';
+              bigButtons[i].className = `big-button ${parsedData[importCount].bigButtonClass || ''}`.trim();
+              smallButtons[i].textContent = parsedData[importCount].smallButtonText || '';
+              localStorage.setItem(`bigButtonText_${i}`, parsedData[importCount].bigButtonText || '');
+              localStorage.setItem(`bigButtonClass_${i}`, parsedData[importCount].bigButtonClass || '');
+              localStorage.setItem(`smallButtonText_${i}`, parsedData[importCount].smallButtonText || '');
+              importCount++;
+            }
+          } else {
+            break; // Bütün import edilenler eklendi, döngüden çık
+          }
+        }
+        // Sayfadaki tüm butonları kontrol ederek buttonIndex'i güncelle
+        let filledCount = 0;
+        for (let i = 0; i < bigButtons.length; i++) {
+          if (bigButtons[i].textContent) {
+            filledCount++;
+          }
+        }
+        buttonIndex = filledCount;
+        localStorage.setItem('buttonIndex', buttonIndex);
+        calculateTotal(); // İçe aktırma sonrası toplamı güncelle
+        jsonInputArea.style.display = 'none'; // Giriş alanını gizle
+        jsonPasteArea.value = ''; // Metin alanını temizle
+        alert('Metinler listeye başarıyla eklendi!');
+      } else {
+        alert('Lütfen metin girin!');
+      }
+    }
+
+    jsonAddButton.addEventListener('click', addItemsWithJson);
+
+    window.addEventListener('click', (event) => {
+      if (!event.target.matches('#share-import-button')) {
+        if (isShareImportMenuOpen) {
+          shareImportMenu.style.display = 'none';
+          isShareImportMenuOpen = false;
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
