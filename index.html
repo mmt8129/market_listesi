@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5 - FIREBASE</title>
+    <title>PRO LISTE V5 - FINAL</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
@@ -27,11 +27,9 @@
             user-select: none;
         }
 
-        /* BLUR KONTROLÜ */
         .blur-target { transition: filter 0.3s ease; }
         body.modal-open .blur-target { filter: blur(8px); pointer-events: none; }
 
-        /* ÜST PANEL */
         .top-fixed-bar { background: var(--card); padding: 10px; border-bottom: 2px solid var(--accent); z-index: 100; }
         .header-row { display: flex; justify-content: space-between; align-items: center; }
         .menu-icon { font-size: 35px; cursor: pointer; color: var(--accent); }
@@ -48,7 +46,6 @@
         .stats-row { display: flex; justify-content: space-around; margin-top: 12px; font-size: 13px; font-weight: 800; }
         .stat-box { padding: 5px 10px; background: rgba(0,0,0,0.2); border-radius: 5px; cursor: pointer; }
 
-        /* ANA LİSTE */
         .container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -77,12 +74,10 @@
         .item-text { font-weight: 900; text-transform: uppercase; text-shadow: var(--shadow); text-align: center; width: 100%; line-height: 1; }
         .item-price-tag { font-size: 10px; margin-top: 3px; font-weight: bold; text-shadow: var(--shadow); }
 
-        /* SİLME MODU */
         .delete-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; border-radius: 6px; }
         .item-card.selected .delete-overlay { display: flex; }
         .item-card.selected .delete-overlay::after { content: 'X'; color: #fff; font-size: 40px; font-weight: 900; }
 
-        /* MODALLAR */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .modal-content { background: var(--card); width: 90%; padding: 20px; border-radius: 15px; border: 2px solid var(--accent); box-sizing: border-box; max-height: 80vh; display: flex; flex-direction: column; }
         
@@ -96,7 +91,6 @@
         .btn-ok { background: var(--accent); }
         .btn-cancel { background: #475569; }
 
-        /* YAN MENÜ */
         .side-menu { position: fixed; top: 0; left: -85%; width: 80%; height: 100%; background: var(--card); z-index: 2500; transition: 0.4s; padding: 25px; box-shadow: 10px 0 20px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
         .side-menu.open { left: 0; }
         .menu-btn { width: 100%; background: #334155; color: white; border: none; padding: 15px; border-radius: 10px; margin-bottom: 12px; font-weight: 800; text-align: left; }
@@ -173,13 +167,10 @@
     let history = [];
     let deleteMode = false;
     let selectedForDelete = new Set();
-    let pressTimer;
-    let isLongPress = false;
     let isReady = false;
 
     const $ = id => document.getElementById(id);
 
-    // 🔹 FIREBASE DİNLEME (REALTIME)
     db.ref('v5_app_state').on('value', snap => {
         const cloud = snap.val();
         if(cloud) {
@@ -194,11 +185,12 @@
         updateHistoryUI();
     });
 
-    // 🔹 FIREBASE YAZMA
     function sync() {
         if(!isReady) return;
-        db.ref('v5_app_state/current').set({id: currentListId, name: currentListName, data: currentList});
-        db.ref('v5_app_state/history').set(history);
+        db.ref('v5_app_state').set({
+            current: {id: currentListId, name: currentListName, data: currentList},
+            history: history
+        });
     }
 
     function toggleBlur(show) {
@@ -217,17 +209,7 @@
             let fSize = item.name.length > 10 ? "11px" : (item.name.length > 6 ? "14px" : "16px");
             card.innerHTML = `<div class="item-text" style="font-size:${fSize}">${item.name}</div>${item.price > 0 ? `<div class="item-price-tag">${item.price} TL</div>` : ''}<div class="delete-overlay"></div>`;
 
-            card.onmousedown = card.ontouchstart = (e) => {
-                isLongPress = false;
-                pressTimer = setTimeout(() => {
-                    isLongPress = true;
-                    if(navigator.vibrate) navigator.vibrate(50);
-                    openEditModal(i);
-                }, 600);
-            };
-            card.onmouseup = card.ontouchend = () => clearTimeout(pressTimer);
             card.onclick = () => {
-                if(isLongPress) return;
                 if(deleteMode) {
                     if(selectedForDelete.has(i)) { selectedForDelete.delete(i); card.classList.remove('selected'); }
                     else { selectedForDelete.add(i); card.classList.add('selected'); }
@@ -260,15 +242,6 @@
         $('btnCloseE').onclick = closeGModal;
     }
 
-    function openStatusModal(type) {
-        toggleBlur(true);
-        const filtered = currentList.filter(x => type === 'taken' ? x.price > 0 : x.price == 0);
-        let listHtml = filtered.map(x => `<div class="list-row"><span>${x.name}</span><span>${x.price > 0 ? x.price + ' TL' : ''}</span></div>`).join('');
-        $('mContent').innerHTML = `<h3>${type === 'taken' ? 'ALINANLAR' : 'ALINACAKLAR'}</h3><div class="scroll-area">${listHtml || 'BOŞ'}</div><div class="fixed-footer-banner">TOPLAM: ${filtered.reduce((a, b) => a + parseFloat(b.price || 0), 0).toFixed(2)} TL</div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseS">KAPAT</button>`;
-        $('gModal').style.display = 'flex';
-        $('btnCloseS').onclick = closeGModal;
-    }
-
     function openBulkModal() {
         toggleBlur(true);
         const currentNames = currentList.map(x => x.name).join('\n');
@@ -287,28 +260,30 @@
 
     function updateHistoryUI() {
         const box = $('historyBox');
-        box.innerHTML = history.map((h, i) => `<div class="history-item ${h.id === currentListId ? 'active-list' : ''}" id="histItem-${i}"><span>${h.name}</span><span style="color:var(--accent)">${h.data ? h.data.length : 0} ÜRÜN</span></div>`).join('');
+        box.innerHTML = '';
         history.forEach((h, i) => {
-            const el = $(`histItem-${i}`);
-            if(!el) return;
-            el.onmousedown = el.ontouchstart = () => { isLongPress = false; pressTimer = setTimeout(() => { isLongPress = true; if(navigator.vibrate) navigator.vibrate(50); closeSideMenu(); openHistAction(i); }, 800); };
-            el.onmouseup = el.ontouchend = () => clearTimeout(pressTimer);
-            el.onclick = () => { if(isLongPress) return; currentListId = h.id; currentListName = h.name; currentList = [...h.data]; sync(); closeSideMenu(); };
+            const div = document.createElement('div');
+            div.className = `history-item ${h.id === currentListId ? 'active-list' : ''}`;
+            div.innerHTML = `<span>${h.name}</span><span style="color:var(--accent)">${h.data ? h.data.length : 0} ÜRÜN</span>`;
+            div.onclick = () => { currentListId = h.id; currentListName = h.name; currentList = [...h.data]; sync(); closeSideMenu(); };
+            box.appendChild(div);
         });
     }
 
-    function openHistAction(i) {
-        toggleBlur(true);
-        $('mContent').innerHTML = `<h3>LİSTE AYARI</h3><input type="text" id="hNewName" value="${history[i].name}"><div class="modal-btns"><button class="btn-ok" id="btnRenH">ADLANDIR</button><button class="btn-cancel" style="background:var(--danger)" id="btnOpenDelH">SİL</button></div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseH">KAPAT</button>`;
-        $('gModal').style.display = 'flex';
-        $('btnRenH').onclick = () => { history[i].name = $('hNewName').value.toUpperCase(); if(history[i].id === currentListId) currentListName = history[i].name; sync(); closeGModal(); };
-        $('btnCloseH').onclick = closeGModal;
-        $('btnOpenDelH').onclick = () => {
-            $('mContent').innerHTML = `<h3>SİLİNSİN Mİ?</h3><p style="text-align:center;">"${history[i].name}" SİLİNECEK.</p><div class="modal-btns"><button class="btn-ok" style="background:var(--danger)" id="btnConfirmDelH">SİL</button><button class="btn-cancel" id="btnAbortH">İPTAL</button></div>`;
-            $('btnConfirmDelH').onclick = () => { const deletedId = history[i].id; history.splice(i, 1); if(deletedId === currentListId) { currentList = []; currentListId = Date.now(); currentListName = "YENİ LİSTE"; } sync(); closeGModal(); };
-            $('btnAbortH').onclick = closeGModal;
-        };
-    }
+    $('mNewList').onclick = () => {
+        // Mevcut liste boş değilse geçmişe ekle/güncelle
+        if(currentList.length > 0) {
+            const idx = history.findIndex(x => x.id === currentListId);
+            if(idx > -1) history[idx].data = [...currentList];
+            else history.unshift({id: currentListId, name: currentListName, data: [...currentList]});
+        }
+        // Yeni liste oluştur
+        currentListId = Date.now();
+        currentListName = "LİSTE " + (history.length + 1);
+        currentList = [];
+        sync();
+        closeSideMenu();
+    };
 
     $('menuBtn').onclick = () => { $('sideMenu').classList.add('open'); toggleBlur(true); };
     function closeSideMenu() { $('sideMenu').classList.remove('open'); toggleBlur(false); }
@@ -319,16 +294,17 @@
     $('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(); };
     $('confirmDel').onclick = () => { currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; sync(); };
     
-    $('mNewList').onclick = () => {
-        const newId = Date.now();
-        const newName = "LİSTE " + (history.length + 1);
-        history.unshift({id: newId, name: newName, data: []});
-        currentList = []; currentListId = newId; currentListName = newName;
-        sync(); closeSideMenu();
-    };
-
     $('btnShowTaken').onclick = () => openStatusModal('taken');
     $('btnShowTodo').onclick = () => openStatusModal('todo');
+
+    function openStatusModal(type) {
+        toggleBlur(true);
+        const filtered = currentList.filter(x => type === 'taken' ? x.price > 0 : x.price == 0);
+        let listHtml = filtered.map(x => `<div class="list-row"><span>${x.name}</span><span>${x.price > 0 ? x.price + ' TL' : ''}</span></div>`).join('');
+        $('mContent').innerHTML = `<h3>${type === 'taken' ? 'ALINANLAR' : 'ALINACAKLAR'}</h3><div class="scroll-area">${listHtml || 'BOŞ'}</div><div class="fixed-footer-banner">TOPLAM: ${filtered.reduce((a, b) => a + parseFloat(b.price || 0), 0).toFixed(2)} TL</div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseS">KAPAT</button>`;
+        $('gModal').style.display = 'flex';
+        $('btnCloseS').onclick = closeGModal;
+    }
 
     window.onclick = (e) => {
         if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); }
