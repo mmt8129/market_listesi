@@ -346,7 +346,17 @@ function saveData() {
         updateHistoryUI(); render();
     };
 </script>
+// Firebase'den verileri anlık çekme ve ekranı basma
+db.ref('products').on('value', (snapshot) => {
+    const data = snapshot.val();
+    currentList = data || []; 
+    console.log("Veri geldi:", currentList); // Kontrol için
+    render(); 
+});
 
+function saveData() {
+    db.ref('products').set(currentList);
+}
     <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js');
