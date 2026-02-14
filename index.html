@@ -329,35 +329,64 @@ saveData(); // Veriyi her değişimde Firebase'e gönderir
         if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); }
     };
 
-    window.onload = () => {
-        const saved = localStorage.getItem('v5_current');
-        if(saved) {
-            const parsed = JSON.parse(saved);
-            currentList = parsed.data || [];
-            currentListId = parsed.id || Date.now();
-            currentListName = parsed.name || "YENİ LİSTE";
-        }
+    /* window.onload = () => {
+      /*  const saved = localStorage.getItem('v5_current');
+       /* if(saved) {
+         /*   const parsed = JSON.parse(saved);
+          /*  currentList = parsed.data || [];
+          /*  currentListId = parsed.id || Date.now();
+          /*  currentListName = parsed.name || "YENİ LİSTE";
+       /* }
         updateHistoryUI(); render();
-    };
+    }; */
 
-// SADECE BU KALSIN (window.onload'dan sonra)
+// VERİLERİ ÇEK VE EKRANI GÜNCELLE
 db.ref('products').on('value', (snapshot) => {
-    currentList = snapshot.val() || [];
-    renderUI(); // Sonsuz döngü olmasın diye renderUI adında yeni basit bir render yapacağız
+    const data = snapshot.val();
+    if (data) {
+        currentList = data;
+        // render() içindeki saveData'yı tetiklememek için renderUI diyelim
+        renderUI(); 
+    }
 });
 
 db.ref('history').on('value', (snapshot) => {
-    history = snapshot.val() || [];
-    updateHistoryUI();
+    const data = snapshot.val();
+    if (data) {
+        history = data;
+        updateHistoryUI();
+    }
 });
 
+// Sadece arayüzü basan temiz fonksiyon
+function renderUI() {
+    const grid = $('mainGrid');
+    grid.innerHTML = '';
+    let total = 0, taken = 0, todo = 0;
+
+    currentList.forEach((item, i) => {
+        const card = document.createElement('div');
+        card.className = `item-card ${item.price > 0 ? 'has-price' : ''}`;
+        let fSize = item.name.length > 10 ? "11px" : (item.name.length > 6 ? "14px" : "16px");
+        card.innerHTML = `<div class="item-text" style="font-size:${fSize}">${item.name}</div>${item.price > 0 ? `<div class="item-price-tag">${item.price} TL</div>` : ''}<div class="delete-overlay"></div>`;
+        
+        // ... (Tıklama olayları mevcut render fonksiyonunla aynı kalsın) ...
+        card.onclick = () => { if(!isLongPress) { if(deleteMode) { /* silme mantığı */ } else { openEditModal(i); } } };
+
+        grid.appendChild(card);
+        if(item.price > 0) { total += parseFloat(item.price); taken++; } else { todo++; }
+    });
+
+    $('total-value').innerText = total.toFixed(2);
+    $('total-items-count').innerText = currentList.length;
+    $('count-taken').innerText = taken;
+    $('count-todo').innerText = todo;
+}
+
+// KAYDETME FONKSİYONU (Sadece kullanıcı işlem yapınca çağrılmalı)
 function saveData() {
     db.ref('products').set(currentList);
     db.ref('history').set(history);
-}
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
 }
 </script>
     
