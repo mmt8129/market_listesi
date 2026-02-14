@@ -179,7 +179,7 @@ db.ref('products').on('value', (snapshot) => {
     
     let currentListId = Date.now();
     let currentListName = "YENİ LİSTE";
-    let history = JSON.parse(localStorage.getItem('v5_history') || '[]');
+   let history = [];
     let deleteMode = false;
     let selectedForDelete = new Set();
     let pressTimer;
@@ -193,8 +193,8 @@ db.ref('products').on('value', (snapshot) => {
     }
 
 function saveData() {
-    // LocalStorage yerine artık Firebase'e yazıyoruz
     db.ref('products').set(currentList);
+    db.ref('history').set(history);
 }
     
     function render() {
@@ -357,6 +357,15 @@ db.ref('products').on('value', (snapshot) => {
     const data = snapshot.val();
     currentList = data || []; // Veri varsa al, yoksa boş liste yap
     render(); // Ekranı güncelle
+});
+
+db.ref('products').on('value', (snapshot) => {
+    currentList = snapshot.val() || [];
+    render();
+});
+
+db.ref('history').on('value', (snapshot) => {
+    history = snapshot.val() || [];
 });
         
 </script>
