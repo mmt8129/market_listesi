@@ -1,104 +1,64 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5 - CLOUD</title>
+    <title>PRO LISTE V5 - FIREBASE</title>
     <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         :root {
-            --bg: #0f172a;
-            --card: #1e293b;
-            --accent: #38bdf8;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --text: #f8fafc;
+            --bg: #0f172a; --card: #1e293b; --accent: #38bdf8;
+            --success: #22c55e; --danger: #ef4444; --text: #f8fafc;
             --shadow: 2px 2px 3px rgba(0,0,0,1);
         }
-
         body {
-            margin: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-            user-select: none;
+            margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg);
+            color: var(--text); display: flex; flex-direction: column; height: 100vh;
+            overflow: hidden; user-select: none;
         }
-
         .blur-target { transition: filter 0.3s ease; }
         body.modal-open .blur-target { filter: blur(8px); pointer-events: none; }
-
         .top-fixed-bar { background: var(--card); padding: 10px; border-bottom: 2px solid var(--accent); z-index: 100; }
         .header-row { display: flex; justify-content: space-between; align-items: center; }
         .menu-icon { font-size: 35px; cursor: pointer; color: var(--accent); }
         .total-display { text-align: center; flex-grow: 1; }
         #total-value { font-size: 30px; font-weight: 900; color: var(--accent); }
         .item-count-badge { font-size: 11px; font-weight: bold; opacity: 0.9; }
-
         .action-btns { display: flex; gap: 5px; }
         .circle-btn { width: 42px; height: 42px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; }
         .btn-plus { background: var(--success); }
         .btn-minus { background: var(--danger); }
         .btn-bulk { background: var(--accent); font-size: 14px; }
-
         .stats-row { display: flex; justify-content: space-around; margin-top: 12px; font-size: 13px; font-weight: 800; }
         .stat-box { padding: 5px 10px; background: rgba(0,0,0,0.2); border-radius: 5px; cursor: pointer; }
-
-        .container {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-gap: 6px;
-            padding: 8px;
-            overflow-y: auto;
-            flex-grow: 1;
-            align-content: start;
-        }
-
+        .container { display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 6px; padding: 8px; overflow-y: auto; flex-grow: 1; align-content: start; }
         .item-card {
-            background: var(--success);
-            border-radius: 6px;
-            height: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 4px;
-            box-sizing: border-box;
-            border: 1px solid rgba(255,255,255,0.1);
+            background: var(--success); border-radius: 6px; height: 60px; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            position: relative; padding: 4px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.1);
         }
-
         .item-card.has-price { background: var(--danger); }
         .item-text { font-weight: 900; text-transform: uppercase; text-shadow: var(--shadow); text-align: center; width: 100%; line-height: 1; }
         .item-price-tag { font-size: 10px; margin-top: 3px; font-weight: bold; text-shadow: var(--shadow); }
-
         .delete-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; border-radius: 6px; }
         .item-card.selected .delete-overlay { display: flex; }
         .item-card.selected .delete-overlay::after { content: 'X'; color: #fff; font-size: 40px; font-weight: 900; }
-
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .modal-content { background: var(--card); width: 90%; padding: 20px; border-radius: 15px; border: 2px solid var(--accent); box-sizing: border-box; max-height: 80vh; display: flex; flex-direction: column; }
-        
         .scroll-area { overflow-y: auto; flex-grow: 1; margin: 10px 0; }
         .list-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #334155; font-weight: bold; text-transform: uppercase; }
         .fixed-footer-banner { border-top: 3px solid var(--accent); padding-top: 10px; text-align: center; font-size: 20px; font-weight: 900; color: var(--success); }
-
         input, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; box-sizing: border-box; text-transform: uppercase; font-weight: bold; }
         .modal-btns { display: flex; gap: 10px; margin-top: 10px; }
         .modal-btns button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: 900; color: white; }
         .btn-ok { background: var(--accent); }
         .btn-cancel { background: #475569; }
-
-        .side-menu { position: fixed; top: 0; left: -100%; width: 70%; height: 100%; background: var(--card); z-index: 2500; transition: 0.4s; padding: 25px; box-shadow: 10px 0 20px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
+        .side-menu { position: fixed; top: 0; left: -100%; width: 75%; height: 100%; background: var(--card); z-index: 2500; transition: 0.4s; padding: 25px; box-shadow: 10px 0 20px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
         .side-menu.open { left: 0; }
         .menu-btn { width: 100%; background: #334155; color: white; border: none; padding: 15px; border-radius: 10px; margin-bottom: 12px; font-weight: 800; text-align: left; }
         .history-list { margin-top: 10px; border: 2px solid #334155; flex-grow: 1; overflow-y: auto; border-radius: 10px; background: rgba(0,0,0,0.2); }
         .history-item { padding: 15px; border-bottom: 1px solid #334155; font-size: 14px; display: flex; justify-content: space-between; font-weight: bold; }
         .history-item.active-list { border: 2px solid var(--accent); background: rgba(56, 189, 248, 0.1); border-radius: 8px; }
-
         .floating-confirm { position: fixed; bottom: 30px; left: 0; width: 100%; display: none; justify-content: center; gap: 20px; z-index: 1500; }
     </style>
 </head>
@@ -170,10 +130,10 @@ let isLongPress = false;
 
 const $ = id => document.getElementById(id);
 
-// 🔥 FIREBASE REALTIME SYNC
+// 🔹 FIREBASE'DEN VERİLERİ ANLIK DİNLE
 db.ref('products').on('value', (snapshot) => {
     currentList = snapshot.val() || [];
-    render(false); // Sadece arayüzü çiz, Firebase'e geri yazma
+    renderUI();
 });
 
 db.ref('history').on('value', (snapshot) => {
@@ -181,17 +141,12 @@ db.ref('history').on('value', (snapshot) => {
     updateHistoryUI();
 });
 
-function toggleBlur(show) {
-    if(show) document.body.classList.add('modal-open');
-    else document.body.classList.remove('modal-open');
-}
-
 function syncFirebase() {
     db.ref('products').set(currentList);
     db.ref('history').set(history);
 }
 
-function render(shouldSync = true) {
+function renderUI() {
     const grid = $('mainGrid');
     grid.innerHTML = '';
     let total = 0, taken = 0, todo = 0;
@@ -228,8 +183,6 @@ function render(shouldSync = true) {
     $('total-items-count').innerText = currentList.length;
     $('count-taken').innerText = taken;
     $('count-todo').innerText = todo;
-
-    if(shouldSync) syncFirebase();
 }
 
 function openAddModal() {
@@ -239,7 +192,7 @@ function openAddModal() {
     setTimeout(() => { $('inName').focus(); }, 150);
     $('btnSaveAdd').onclick = () => { 
         const n = $('inName').value.trim().toUpperCase(); 
-        if(n) { currentList.push({name: n, price: 0}); render(); } 
+        if(n) { currentList.push({name: n, price: 0}); syncFirebase(); } 
         closeGModal(); 
     };
     $('btnCloseM').onclick = closeGModal;
@@ -253,7 +206,7 @@ function openEditModal(i) {
     $('btnSaveEdit').onclick = () => { 
         currentList[i].name = $('edName').value.trim().toUpperCase(); 
         currentList[i].price = $('edPrice').value || 0; 
-        render(); 
+        syncFirebase(); 
         closeGModal(); 
     };
     $('btnCloseE').onclick = closeGModal;
@@ -274,7 +227,7 @@ function openBulkModal() {
                 newList.push(ex ? ex : {name: n, price: 0}); 
             } 
         });
-        currentList = newList; render(); closeGModal();
+        currentList = newList; syncFirebase(); closeGModal();
     };
     $('btnCloseB').onclick = closeGModal;
 }
@@ -288,12 +241,13 @@ function updateHistoryUI() {
             currentListId = h.id; 
             currentListName = h.name;
             currentList = [...(h.data || [])]; 
-            render(); 
+            syncFirebase(); 
             closeSideMenu(); 
         };
     });
 }
 
+function toggleBlur(show) { if(show) document.body.classList.add('modal-open'); else document.body.classList.remove('modal-open'); }
 function closeGModal() { $('gModal').style.display='none'; toggleBlur(false); }
 function closeSideMenu() { $('sideMenu').classList.remove('open'); toggleBlur(false); }
 
@@ -301,24 +255,20 @@ $('menuBtn').onclick = () => { $('sideMenu').classList.add('open'); toggleBlur(t
 $('addQuick').onclick = openAddModal;
 $('mBulkList').onclick = openBulkModal;
 $('delQuick').onclick = () => { deleteMode = true; selectedForDelete.clear(); $('deleteControls').style.display = 'flex'; $('mainWrapper').style.opacity = "0.5"; };
-$('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(false); };
+$('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; renderUI(); };
 $('confirmDel').onclick = () => { 
     currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); 
-    deleteMode = false; 
-    $('deleteControls').style.display = 'none'; 
-    $('mainWrapper').style.opacity = "1"; 
-    render(); 
+    deleteMode = false; $('deleteControls').style.display = 'none'; 
+    $('mainWrapper').style.opacity = "1"; syncFirebase(); 
 };
 
 $('mNewList').onclick = () => {
     if(currentList.length > 0) {
         history.unshift({id: currentListId, name: currentListName, data: [...currentList]});
     }
-    currentList = [];
-    currentListId = Date.now();
+    currentList = []; currentListId = Date.now();
     currentListName = "LİSTE " + (history.length + 1);
-    render();
-    closeSideMenu();
+    syncFirebase(); closeSideMenu();
 };
 
 function openStatusModal(type) {
@@ -326,20 +276,13 @@ function openStatusModal(type) {
     const filtered = currentList.filter(x => type === 'taken' ? x.price > 0 : x.price == 0);
     let listHtml = filtered.map(x => `<div class="list-row"><span>${x.name}</span><span>${x.price > 0 ? x.price + ' TL' : ''}</span></div>`).join('');
     $('mContent').innerHTML = `<h3>${type === 'taken' ? 'ALINANLAR' : 'ALINACAKLAR'}</h3><div class="scroll-area">${listHtml || 'BOŞ'}</div><div class="fixed-footer-banner">TOPLAM: ${filtered.reduce((a, b) => a + parseFloat(b.price || 0), 0).toFixed(2)} TL</div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseS">KAPAT</button>`;
-    $('gModal').style.display = 'flex';
-    $('btnCloseS').onclick = closeGModal;
+    $('gModal').style.display = 'flex'; $('btnCloseS').onclick = closeGModal;
 }
 
 $('btnShowTaken').onclick = () => openStatusModal('taken');
 $('btnShowTodo').onclick = () => openStatusModal('todo');
 
-window.onclick = (e) => {
-    if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); }
-};
-
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-}
+window.onclick = (e) => { if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); } };
 </script>
 </body>
 </html>
