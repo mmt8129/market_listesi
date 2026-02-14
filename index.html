@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5 - FIREBASE FINAL</title>
+    <title>PRO LISTE V5 - FIREBASE ONLY</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
@@ -13,31 +13,23 @@
         .card { background: var(--success); border-radius: 8px; height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-weight: bold; font-size: 13px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
         .card.has-price { background: var(--danger); }
         .price-tag { font-size: 10px; margin-top: 4px; opacity: 0.9; }
-        .side-menu { position: fixed; top: 0; left: -100%; width: 80%; height: 100%; background: var(--card); z-index: 1000; transition: 0.3s; padding: 20px; box-sizing: border-box; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
-        .side-menu.open { left: 0; }
         .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:2000; }
         .modal-content { background:var(--card); width:90%; padding:20px; border-radius:15px; border:2px solid var(--accent); }
         input { width:100%; padding:12px; margin:10px 0; background:#000; color:#fff; border:1px solid var(--accent); border-radius:8px; box-sizing:border-box; }
-        button { border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
+        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); display:flex; justify-content:center; align-items:center; z-index:9999; color:var(--accent); font-weight:bold; }
     </style>
 </head>
 <body>
 
+<div id="loading-screen">FIREBASE BAĞLANILIYOR...</div>
+
 <div class="top-bar">
-    <div onclick="toggleMenu(true)" style="font-size:30px;">☰</div>
+    <div style="font-size:20px; font-weight:bold; color:var(--accent)">PRO V5</div>
     <div id="total-value">0.00</div>
-    <button onclick="openAdd()" style="background:var(--success); color:#fff; padding:10px 15px; font-size:20px;">+</button>
+    <button onclick="openAdd()" style="background:var(--success); border:none; color:#fff; padding:10px 20px; border-radius:8px; font-weight:bold; font-size:20px;">+</button>
 </div>
 
 <div class="grid" id="mainGrid"></div>
-
-<div id="sideMenu" class="side-menu">
-    <div onclick="toggleMenu(false)" style="font-size:30px; text-align:right;">✕</div>
-    <h2>İŞLEMLER</h2>
-    <button onclick="createNewList()" style="width:100%; padding:15px; background:var(--accent); color:#fff; margin-bottom:20px;">📄 YENİ LİSTE OLUŞTUR</button>
-    <h3>GEÇMİŞ LİSTELER</h3>
-    <div id="historyBox" style="overflow-y:auto; max-height:60vh;"></div>
-</div>
 
 <div id="gModal" class="modal">
     <div class="modal-content" id="mContent"></div>
@@ -57,33 +49,30 @@ const firebaseConfig = {
     databaseURL: "https://market-listesi-d9338-default-rtdb.firebaseio.com"
 };
 
+// 🔹 FIREBASE BAŞLAT
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let currentList = [];
-let history = [];
-let isDataReady = false; // 🔥 SİLİNMEYİ ENGELLEYEN KRİTİK KİLİT
+let isReady = false;
 
-// 🔹 FİREBASE'DEN VERİ ÇEK (OTOMATİK GÜNCELLEME)
-db.ref('products').on('value', snap => {
+// 🔹 VERİ ÇEKME (REALTIME)
+db.ref('products').on('value', (snap) => {
     currentList = snap.val() || [];
-    isDataReady = true; // Veri en az bir kez başarıyla geldi
-    renderUI();
+    isReady = true;
+    document.getElementById('loading-screen').style.display = 'none';
+    render();
+}, (error) => {
+    alert("Firebase Hatası: " + error.message);
 });
 
-db.ref('history').on('value', snap => {
-    history = snap.val() || [];
-    renderHistory();
-});
-
-// 🔹 FİREBASE'E KAYDET
+// 🔹 VERİ YAZMA
 function sync() {
-    if (!isDataReady) return; // Veri çekilmeden yazmaya kalkma!
-    db.ref('products').set(currentList);
-    db.ref('history').set(history);
+    if(!isReady) return;
+    db.ref('products').set(currentList).catch(err => alert("Yazma Hatası: " + err.message));
 }
 
-function renderUI() {
+function render() {
     const grid = document.getElementById('mainGrid');
     grid.innerHTML = '';
     let total = 0;
@@ -99,59 +88,51 @@ function renderUI() {
 }
 
 function openAdd() {
-    document.getElementById('mContent').innerHTML = `<h3>ÜRÜN EKLE</h3><input id="nIn" placeholder="Ürün Adı..." autofocus><button onclick="saveAdd()" style="width:100%; padding:15px; background:var(--success); color:#fff;">EKLE</button>`;
+    document.getElementById('mContent').innerHTML = `
+        <h3 style="margin-top:0">ÜRÜN EKLE</h3>
+        <input id="nIn" placeholder="Ürün adı..." autofocus>
+        <button onclick="saveAdd()" style="width:100%; padding:15px; background:var(--success); border:none; color:#fff; border-radius:8px; font-weight:bold;">EKLE</button>
+        <button onclick="closeM()" style="width:100%; padding:10px; background:transparent; border:none; color:#aaa; margin-top:10px;">İPTAL</button>
+    `;
     document.getElementById('gModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('nIn').focus(), 100);
 }
 
 function saveAdd() {
     const n = document.getElementById('nIn').value.trim().toUpperCase();
-    if(n) { currentList.push({name: n, price: 0}); sync(); closeM(); }
+    if(n) {
+        currentList.push({name: n, price: 0});
+        sync();
+        closeM();
+    }
 }
 
 function openEdit(i) {
     const item = currentList[i];
-    document.getElementById('mContent').innerHTML = `<h3>${item.name}</h3><input id="pIn" type="number" step="0.01" value="${item.price || ''}" placeholder="Fiyat Gir..."><button onclick="saveEdit(${i})" style="width:100%; padding:15px; background:var(--accent); color:#fff; margin-bottom:10px;">KAYDET</button><button onclick="delItem(${i})" style="width:100%; padding:10px; background:var(--danger); color:#fff;">ÜRÜNÜ SİL</button>`;
+    document.getElementById('mContent').innerHTML = `
+        <h3 style="margin-top:0">${item.name}</h3>
+        <input id="pIn" type="number" step="0.01" value="${item.price || ''}" placeholder="Fiyat girin...">
+        <button onclick="saveEdit(${i})" style="width:100%; padding:15px; background:var(--accent); border:none; color:#fff; border-radius:8px; font-weight:bold;">GÜNCELLE</button>
+        <button onclick="delItem(${i})" style="width:100%; padding:10px; background:var(--danger); border:none; color:#fff; border-radius:8px; font-weight:bold; margin-top:10px;">SİL</button>
+        <button onclick="closeM()" style="width:100%; padding:10px; background:transparent; border:none; color:#aaa; margin-top:10px;">KAPAT</button>
+    `;
     document.getElementById('gModal').style.display = 'flex';
 }
 
 function saveEdit(i) {
-    currentList[i].price = document.getElementById('pIn').value || 0;
-    sync(); closeM();
+    const p = document.getElementById('pIn').value;
+    currentList[i].price = p || 0;
+    sync();
+    closeM();
 }
 
 function delItem(i) {
     currentList.splice(i, 1);
-    sync(); closeM();
+    sync();
+    closeM();
 }
 
-function createNewList() {
-    if(currentList.length > 0) {
-        const hName = prompt("LİSTE ADI:", "LİSTE " + (history.length + 1));
-        if(hName) {
-            history.unshift({name: hName.toUpperCase(), data: [...currentList]});
-            currentList = [];
-            sync();
-            toggleMenu(false);
-        }
-    } else { alert("LİSTE BOŞ!"); }
-}
-
-function renderHistory() {
-    const box = document.getElementById('historyBox');
-    box.innerHTML = history.map((h, i) => `<div onclick="loadHistory(${i})" style="padding:15px; border-bottom:1px solid #444; background:rgba(255,255,255,0.05); margin-bottom:5px; border-radius:8px;">${h.name}<br><small style="color:var(--accent)">${h.data ? h.data.length : 0} Ürün</small></div>`).join('');
-}
-
-function loadHistory(i) {
-    if(confirm("MEVCUT LİSTE SİLİNECEK. DEVAM?")) {
-        currentList = [...history[i].data];
-        sync();
-        toggleMenu(false);
-    }
-}
-
-function toggleMenu(open) { document.getElementById('sideMenu').classList.toggle('open', open); }
 function closeM() { document.getElementById('gModal').style.display = 'none'; }
-window.onclick = (e) => { if(e.target == document.getElementById('gModal')) closeM(); }
 </script>
 </body>
 </html>
