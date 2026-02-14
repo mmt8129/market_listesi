@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5</title>
-<link rel="manifest" href="manifest.json">
-    
+    <title>PRO LISTE V5 - CLOUD</title>
+    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
@@ -29,11 +28,9 @@
             user-select: none;
         }
 
-        /* BLUR KONTROLÜ */
         .blur-target { transition: filter 0.3s ease; }
         body.modal-open .blur-target { filter: blur(8px); pointer-events: none; }
 
-        /* ÜST PANEL */
         .top-fixed-bar { background: var(--card); padding: 10px; border-bottom: 2px solid var(--accent); z-index: 100; }
         .header-row { display: flex; justify-content: space-between; align-items: center; }
         .menu-icon { font-size: 35px; cursor: pointer; color: var(--accent); }
@@ -50,7 +47,6 @@
         .stats-row { display: flex; justify-content: space-around; margin-top: 12px; font-size: 13px; font-weight: 800; }
         .stat-box { padding: 5px 10px; background: rgba(0,0,0,0.2); border-radius: 5px; cursor: pointer; }
 
-        /* ANA LİSTE */
         .container {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -79,12 +75,10 @@
         .item-text { font-weight: 900; text-transform: uppercase; text-shadow: var(--shadow); text-align: center; width: 100%; line-height: 1; }
         .item-price-tag { font-size: 10px; margin-top: 3px; font-weight: bold; text-shadow: var(--shadow); }
 
-        /* SİLME MODU */
         .delete-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; border-radius: 6px; }
         .item-card.selected .delete-overlay { display: flex; }
         .item-card.selected .delete-overlay::after { content: 'X'; color: #fff; font-size: 40px; font-weight: 900; }
 
-        /* MODALLAR */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .modal-content { background: var(--card); width: 90%; padding: 20px; border-radius: 15px; border: 2px solid var(--accent); box-sizing: border-box; max-height: 80vh; display: flex; flex-direction: column; }
         
@@ -98,8 +92,7 @@
         .btn-ok { background: var(--accent); }
         .btn-cancel { background: #475569; }
 
-        /* YAN MENÜ */
-        .side-menu { position: fixed; top: 0; left: -100%; width: 50%; height: 100%; background: var(--card); z-index: 2500; transition: 0.4s; padding: 25px; box-shadow: 10px 0 20px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
+        .side-menu { position: fixed; top: 0; left: -100%; width: 70%; height: 100%; background: var(--card); z-index: 2500; transition: 0.4s; padding: 25px; box-shadow: 10px 0 20px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
         .side-menu.open { left: 0; }
         .menu-btn { width: 100%; background: #334155; color: white; border: none; padding: 15px; border-radius: 10px; margin-bottom: 12px; font-weight: 800; text-align: left; }
         .history-list { margin-top: 10px; border: 2px solid #334155; flex-grow: 1; overflow-y: auto; border-radius: 10px; background: rgba(0,0,0,0.2); }
@@ -151,215 +144,54 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    
-<script>
 
+<script>
 const firebaseConfig = {
-  apiKey: "AIzaSyA9whlWMrlyF6GMnWBK7SQA76qNFpO7RkQ",
-  authDomain: "market-listesi-d9338.firebaseapp.com",
-  projectId: "market-listesi-d9338",
-  storageBucket: "market-listesi-d9338.firebasestorage.app",
-  messagingSenderId: "91497340883",
-  appId: "1:91497340883:web:6e9280b4a70d0a6f38d926",
-  databaseURL: "https://market-listesi-d9338-default-rtdb.firebaseio.com"
+    apiKey: "AIzaSyA9whlWMrlyF6GMnWBK7SQA76qNFpO7RkQ",
+    authDomain: "market-listesi-d9338.firebaseapp.com",
+    projectId: "market-listesi-d9338",
+    storageBucket: "market-listesi-d9338.firebasestorage.app",
+    messagingSenderId: "91497340883",
+    appId: "1:91497340883:web:6e9280b4a70d0a6f38d926",
+    databaseURL: "https://market-listesi-d9338-default-rtdb.firebaseio.com"
 };
 
-// Firebase'i Başlat
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-    
-    let currentList = [];
 
-// Firebase'den verileri anlık çek
+let currentList = [];
+let history = [];
+let currentListId = Date.now();
+let currentListName = "YENİ LİSTE";
+let deleteMode = false;
+let selectedForDelete = new Set();
+let pressTimer;
+let isLongPress = false;
+
+const $ = id => document.getElementById(id);
+
+// 🔥 FIREBASE REALTIME SYNC
 db.ref('products').on('value', (snapshot) => {
-    const data = snapshot.val();
-    currentList = data ? Object.values(data) : [];
-    render(); // Veri gelince ekranı tazele
-});
-    
-    let currentListId = Date.now();
-    let currentListName = "YENİ LİSTE";
-   let history = [];
-    let deleteMode = false;
-    let selectedForDelete = new Set();
-    let pressTimer;
-    let isLongPress = false;
-
-    const $ = id => document.getElementById(id);
-
-    function toggleBlur(show) {
-        if(show) document.body.classList.add('modal-open');
-        else document.body.classList.remove('modal-open');
-    }
-
-function saveData() {
-    db.ref('products').set(currentList);
-    db.ref('history').set(history);
-}
-    
-    function render() {
-        const grid = $('mainGrid');
-        grid.innerHTML = '';
-        let total = 0, taken = 0, todo = 0;
-
-        currentList.forEach((item, i) => {
-            const card = document.createElement('div');
-            card.className = `item-card ${item.price > 0 ? 'has-price' : ''}`;
-            let fSize = item.name.length > 10 ? "11px" : (item.name.length > 6 ? "14px" : "16px");
-            card.innerHTML = `<div class="item-text" style="font-size:${fSize}">${item.name}</div>${item.price > 0 ? `<div class="item-price-tag">${item.price} TL</div>` : ''}<div class="delete-overlay"></div>`;
-
-            card.onmousedown = card.ontouchstart = (e) => {
-                isLongPress = false;
-                pressTimer = setTimeout(() => {
-                    isLongPress = true;
-                    if(navigator.vibrate) navigator.vibrate(50);
-                    openEditModal(i);
-                }, 600);
-            };
-            card.onmouseup = card.ontouchend = () => clearTimeout(pressTimer);
-            card.onclick = () => {
-                if(isLongPress) return;
-                if(deleteMode) {
-                    if(selectedForDelete.has(i)) { selectedForDelete.delete(i); card.classList.remove('selected'); }
-                    else { selectedForDelete.add(i); card.classList.add('selected'); }
-                } else { openEditModal(i); }
-            };
-            grid.appendChild(card);
-            if(item.price > 0) { total += parseFloat(item.price); taken++; } else { todo++; }
-        });
-
-        $('total-value').innerText = total.toFixed(2);
-        $('total-items-count').innerText = currentList.length;
-        $('count-taken').innerText = taken;
-        $('count-todo').innerText = todo;
-        
-saveData(); // Veriyi her değişimde Firebase'e gönderir
-    }
-
-    function openAddModal() {
-        toggleBlur(true);
-        $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" id="btnCloseM">İPTAL</button></div>`;
-        $('gModal').style.display = 'flex';
-        setTimeout(() => { $('inName').focus(); }, 150);
-        $('btnSaveAdd').onclick = () => { const n = $('inName').value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); render(); } closeGModal(); };
-        $('btnCloseM').onclick = closeGModal;
-    }
-
-    function openEditModal(i) {
-        toggleBlur(true);
-        const item = currentList[i];
-        $('mContent').innerHTML = `<h3>${item.name}</h3><input type="text" id="edName" value="${item.name}"><input type="number" id="edPrice" placeholder="FİYAT" value="${item.price || ''}"><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">TAMAM</button><button class="btn-cancel" id="btnCloseE">İPTAL</button></div>`;
-        $('gModal').style.display = 'flex';
-         setTimeout(() => { $('inName').focus(); }, 150);
-        $('btnSaveEdit').onclick = () => { currentList[i].name = $('edName').value.trim().toUpperCase(); currentList[i].price = $('edPrice').value || 0; render(); closeGModal(); };
-        $('btnCloseE').onclick = closeGModal;
-    }
-
-    function openStatusModal(type) {
-        toggleBlur(true);
-        const filtered = currentList.filter(x => type === 'taken' ? x.price > 0 : x.price == 0);
-        let listHtml = filtered.map(x => `<div class="list-row"><span>${x.name}</span><span>${x.price > 0 ? x.price + ' TL' : ''}</span></div>`).join('');
-        $('mContent').innerHTML = `<h3>${type === 'taken' ? 'ALINANLAR' : 'ALINACAKLAR'}</h3><div class="scroll-area">${listHtml || 'BOŞ'}</div><div class="fixed-footer-banner">TOPLAM: ${filtered.reduce((a, b) => a + parseFloat(b.price || 0), 0).toFixed(2)} TL</div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseS">KAPAT</button>`;
-        $('gModal').style.display = 'flex';
-        $('btnCloseS').onclick = closeGModal;
-    }
-
-    function openBulkModal() {
-        toggleBlur(true);
-        const currentNames = currentList.map(x => x.name).join('\n');
-        $('mContent').innerHTML = `<h3>LİSTE YAP</h3><textarea id="bulkData" rows="10">${currentNames}</textarea><div class="modal-btns"><button class="btn-ok" id="btnSaveBulk">GÜNCELLE</button><button class="btn-cancel" id="btnCloseB">İPTAL</button></div>`;
-        $('gModal').style.display = 'flex';
-        $('btnSaveBulk').onclick = () => {
-            const lines = $('bulkData').value.split('\n');
-            let newList = [];
-            lines.forEach(line => { const n = line.trim().toUpperCase(); if(n) { const ex = currentList.find(x => x.name === n); newList.push(ex ? ex : {name: n, price: 0}); } });
-            currentList = newList; render(); closeGModal();
-        };
-        $('btnCloseB').onclick = closeGModal;
-    }
-
-    function closeGModal() { $('gModal').style.display='none'; toggleBlur(false); }
-
-    function updateHistoryUI() {
-        const box = $('historyBox');
-        box.innerHTML = history.map((h, i) => `<div class="history-item ${h.id === currentListId ? 'active-list' : ''}" id="histItem-${i}"><span>${h.name}</span><span style="color:var(--accent)">${h.data.length} ÜRÜN</span></div>`).join('');
-        history.forEach((h, i) => {
-            const el = $(`histItem-${i}`);
-            el.onmousedown = el.ontouchstart = () => { isLongPress = false; pressTimer = setTimeout(() => { isLongPress = true; if(navigator.vibrate) navigator.vibrate(50); closeSideMenu(); openHistAction(i); }, 800); };
-            el.onmouseup = el.ontouchend = () => clearTimeout(pressTimer);
-            el.onclick = () => { if(isLongPress) return; currentListId = h.id; currentListName = h.name; currentList = [...h.data]; render(); updateHistoryUI(); closeSideMenu(); };
-        });
-    }
-
-    function openHistAction(i) {
-        toggleBlur(true);
-        $('mContent').innerHTML = `<h3>LİSTE AYARI</h3><input type="text" id="hNewName" value="${history[i].name}"><div class="modal-btns"><button class="btn-ok" id="btnRenH">ADLANDIR</button><button class="btn-cancel" style="background:var(--danger)" id="btnOpenDelH">SİL</button></div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseH">KAPAT</button>`;
-        $('gModal').style.display = 'flex';
-        $('btnRenH').onclick = () => { history[i].name = $('hNewName').value.toUpperCase(); if(history[i].id === currentListId) currentListName = history[i].name; localStorage.setItem('v5_history', JSON.stringify(history)); updateHistoryUI(); render(); closeGModal(); };
-        $('btnCloseH').onclick = closeGModal;
-        $('btnOpenDelH').onclick = () => {
-            $('mContent').innerHTML = `<h3>SİLİNSİN Mİ?</h3><p style="text-align:center;">"${history[i].name}" SİLİNECEK.</p><div class="modal-btns"><button class="btn-ok" style="background:var(--danger)" id="btnConfirmDelH">SİL</button><button class="btn-cancel" id="btnAbortH">İPTAL</button></div>`;
-            $('btnConfirmDelH').onclick = () => { const deletedId = history[i].id; history.splice(i, 1); localStorage.setItem('v5_history', JSON.stringify(history)); if(deletedId === currentListId) { currentList = []; currentListId = Date.now(); currentListName = "YENİ LİSTE"; } updateHistoryUI(); render(); closeGModal(); };
-            $('btnAbortH').onclick = closeGModal;
-        };
-    }
-
-    $('menuBtn').onclick = () => { $('sideMenu').classList.add('open'); toggleBlur(true); };
-    function closeSideMenu() { $('sideMenu').classList.remove('open'); toggleBlur(false); }
-    
-    $('addQuick').onclick = openAddModal;
-    $('mBulkList').onclick = openBulkModal;
-    $('delQuick').onclick = () => { deleteMode = true; selectedForDelete.clear(); $('deleteControls').style.display = 'flex'; $('mainWrapper').style.opacity = "0.5"; };
-    $('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(); };
-    $('confirmDel').onclick = () => { currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(); };
-    
-    $('mNewList').onclick = () => {
-        const newId = Date.now();
-        const newName = "LİSTE " + (history.length + 1);
-        history.unshift({id: newId, name: newName, data: []});
-        currentList = []; currentListId = newId; currentListName = newName;
-        localStorage.setItem('v5_history', JSON.stringify(history)); 
-        render(); updateHistoryUI(); closeSideMenu();
-    };
-
-    $('btnShowTaken').onclick = () => openStatusModal('taken');
-    $('btnShowTodo').onclick = () => openStatusModal('todo');
-
-    window.onclick = (e) => {
-        if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); }
-    };
-
-    /* window.onload = () => {
-      /*  const saved = localStorage.getItem('v5_current');
-       /* if(saved) {
-         /*   const parsed = JSON.parse(saved);
-          /*  currentList = parsed.data || [];
-          /*  currentListId = parsed.id || Date.now();
-          /*  currentListName = parsed.name || "YENİ LİSTE";
-       /* }
-        updateHistoryUI(); render();
-    }; */
-
-// VERİLERİ ÇEK VE EKRANI GÜNCELLE
-db.ref('products').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-        currentList = data;
-        // render() içindeki saveData'yı tetiklememek için renderUI diyelim
-        renderUI(); 
-    }
+    currentList = snapshot.val() || [];
+    render(false); // Sadece arayüzü çiz, Firebase'e geri yazma
 });
 
 db.ref('history').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-        history = data;
-        updateHistoryUI();
-    }
+    history = snapshot.val() || [];
+    updateHistoryUI();
 });
 
-// Sadece arayüzü basan temiz fonksiyon
-function renderUI() {
+function toggleBlur(show) {
+    if(show) document.body.classList.add('modal-open');
+    else document.body.classList.remove('modal-open');
+}
+
+function syncFirebase() {
+    db.ref('products').set(currentList);
+    db.ref('history').set(history);
+}
+
+function render(shouldSync = true) {
     const grid = $('mainGrid');
     grid.innerHTML = '';
     let total = 0, taken = 0, todo = 0;
@@ -367,12 +199,27 @@ function renderUI() {
     currentList.forEach((item, i) => {
         const card = document.createElement('div');
         card.className = `item-card ${item.price > 0 ? 'has-price' : ''}`;
+        if(deleteMode && selectedForDelete.has(i)) card.classList.add('selected');
+        
         let fSize = item.name.length > 10 ? "11px" : (item.name.length > 6 ? "14px" : "16px");
         card.innerHTML = `<div class="item-text" style="font-size:${fSize}">${item.name}</div>${item.price > 0 ? `<div class="item-price-tag">${item.price} TL</div>` : ''}<div class="delete-overlay"></div>`;
-        
-        // ... (Tıklama olayları mevcut render fonksiyonunla aynı kalsın) ...
-        card.onclick = () => { if(!isLongPress) { if(deleteMode) { /* silme mantığı */ } else { openEditModal(i); } } };
 
+        card.onmousedown = card.ontouchstart = (e) => {
+            isLongPress = false;
+            pressTimer = setTimeout(() => {
+                isLongPress = true;
+                if(navigator.vibrate) navigator.vibrate(50);
+                if(!deleteMode) openEditModal(i);
+            }, 600);
+        };
+        card.onmouseup = card.ontouchend = () => clearTimeout(pressTimer);
+        card.onclick = () => {
+            if(isLongPress) return;
+            if(deleteMode) {
+                if(selectedForDelete.has(i)) { selectedForDelete.delete(i); card.classList.remove('selected'); }
+                else { selectedForDelete.add(i); card.classList.add('selected'); }
+            } else { openEditModal(i); }
+        };
         grid.appendChild(card);
         if(item.price > 0) { total += parseFloat(item.price); taken++; } else { todo++; }
     });
@@ -381,14 +228,118 @@ function renderUI() {
     $('total-items-count').innerText = currentList.length;
     $('count-taken').innerText = taken;
     $('count-todo').innerText = todo;
+
+    if(shouldSync) syncFirebase();
 }
 
-// KAYDETME FONKSİYONU (Sadece kullanıcı işlem yapınca çağrılmalı)
-function saveData() {
-    db.ref('products').set(currentList);
-    db.ref('history').set(history);
+function openAddModal() {
+    toggleBlur(true);
+    $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" id="btnCloseM">İPTAL</button></div>`;
+    $('gModal').style.display = 'flex';
+    setTimeout(() => { $('inName').focus(); }, 150);
+    $('btnSaveAdd').onclick = () => { 
+        const n = $('inName').value.trim().toUpperCase(); 
+        if(n) { currentList.push({name: n, price: 0}); render(); } 
+        closeGModal(); 
+    };
+    $('btnCloseM').onclick = closeGModal;
+}
+
+function openEditModal(i) {
+    toggleBlur(true);
+    const item = currentList[i];
+    $('mContent').innerHTML = `<h3>${item.name}</h3><input type="text" id="edName" value="${item.name}"><input type="number" id="edPrice" placeholder="FİYAT" value="${item.price || ''}"><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">TAMAM</button><button class="btn-cancel" id="btnCloseE">İPTAL</button></div>`;
+    $('gModal').style.display = 'flex';
+    $('btnSaveEdit').onclick = () => { 
+        currentList[i].name = $('edName').value.trim().toUpperCase(); 
+        currentList[i].price = $('edPrice').value || 0; 
+        render(); 
+        closeGModal(); 
+    };
+    $('btnCloseE').onclick = closeGModal;
+}
+
+function openBulkModal() {
+    toggleBlur(true);
+    const currentNames = currentList.map(x => x.name).join('\n');
+    $('mContent').innerHTML = `<h3>LİSTE YAP</h3><textarea id="bulkData" rows="10">${currentNames}</textarea><div class="modal-btns"><button class="btn-ok" id="btnSaveBulk">GÜNCELLE</button><button class="btn-cancel" id="btnCloseB">İPTAL</button></div>`;
+    $('gModal').style.display = 'flex';
+    $('btnSaveBulk').onclick = () => {
+        const lines = $('bulkData').value.split('\n');
+        let newList = [];
+        lines.forEach(line => { 
+            const n = line.trim().toUpperCase(); 
+            if(n) { 
+                const ex = currentList.find(x => x.name === n); 
+                newList.push(ex ? ex : {name: n, price: 0}); 
+            } 
+        });
+        currentList = newList; render(); closeGModal();
+    };
+    $('btnCloseB').onclick = closeGModal;
+}
+
+function updateHistoryUI() {
+    const box = $('historyBox');
+    box.innerHTML = history.map((h, i) => `<div class="history-item ${h.id === currentListId ? 'active-list' : ''}" id="histItem-${i}"><span>${h.name}</span><span style="color:var(--accent)">${h.data ? h.data.length : 0} ÜRÜN</span></div>`).join('');
+    history.forEach((h, i) => {
+        const el = $(`histItem-${i}`);
+        el.onclick = () => { 
+            currentListId = h.id; 
+            currentListName = h.name;
+            currentList = [...(h.data || [])]; 
+            render(); 
+            closeSideMenu(); 
+        };
+    });
+}
+
+function closeGModal() { $('gModal').style.display='none'; toggleBlur(false); }
+function closeSideMenu() { $('sideMenu').classList.remove('open'); toggleBlur(false); }
+
+$('menuBtn').onclick = () => { $('sideMenu').classList.add('open'); toggleBlur(true); };
+$('addQuick').onclick = openAddModal;
+$('mBulkList').onclick = openBulkModal;
+$('delQuick').onclick = () => { deleteMode = true; selectedForDelete.clear(); $('deleteControls').style.display = 'flex'; $('mainWrapper').style.opacity = "0.5"; };
+$('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(false); };
+$('confirmDel').onclick = () => { 
+    currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); 
+    deleteMode = false; 
+    $('deleteControls').style.display = 'none'; 
+    $('mainWrapper').style.opacity = "1"; 
+    render(); 
+};
+
+$('mNewList').onclick = () => {
+    if(currentList.length > 0) {
+        history.unshift({id: currentListId, name: currentListName, data: [...currentList]});
+    }
+    currentList = [];
+    currentListId = Date.now();
+    currentListName = "LİSTE " + (history.length + 1);
+    render();
+    closeSideMenu();
+};
+
+function openStatusModal(type) {
+    toggleBlur(true);
+    const filtered = currentList.filter(x => type === 'taken' ? x.price > 0 : x.price == 0);
+    let listHtml = filtered.map(x => `<div class="list-row"><span>${x.name}</span><span>${x.price > 0 ? x.price + ' TL' : ''}</span></div>`).join('');
+    $('mContent').innerHTML = `<h3>${type === 'taken' ? 'ALINANLAR' : 'ALINACAKLAR'}</h3><div class="scroll-area">${listHtml || 'BOŞ'}</div><div class="fixed-footer-banner">TOPLAM: ${filtered.reduce((a, b) => a + parseFloat(b.price || 0), 0).toFixed(2)} TL</div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseS">KAPAT</button>`;
+    $('gModal').style.display = 'flex';
+    $('btnCloseS').onclick = closeGModal;
+}
+
+$('btnShowTaken').onclick = () => openStatusModal('taken');
+$('btnShowTodo').onclick = () => openStatusModal('todo');
+
+window.onclick = (e) => {
+    if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); }
+};
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
 }
 </script>
-    
 </body>
 </html>
