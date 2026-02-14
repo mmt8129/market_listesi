@@ -345,6 +345,16 @@ function saveData() {
         }
         updateHistoryUI(); render();
     };
+
+db.ref('products').on('value', (snapshot) => {
+    currentList = snapshot.val() || [];
+    render();
+});
+
+db.ref('history').on('value', (snapshot) => {
+    history = snapshot.val() || [];
+});
+    
 </script>
 // Firebase'den verileri anlık çekme ve ekranı basma
 db.ref('products').on('value', (snapshot) => {
