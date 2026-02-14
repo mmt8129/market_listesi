@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5 - FIREBASE FIXED</title>
+    <title>PRO LISTE V5 - FIREBASE FINAL</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --success: #22c55e; --danger: #ef4444; --text: #f8fafc; --shadow: 2px 2px 3px rgba(0,0,0,1); }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; touch-action: pan-x pan-y; }
         .blur-target { transition: filter 0.3s ease; }
         body.modal-open .blur-target { filter: blur(8px); pointer-events: none; }
         .top-fixed-bar { background: var(--card); padding: 10px; border-bottom: 2px solid var(--accent); z-index: 100; }
@@ -25,8 +25,8 @@
         .container { display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 6px; padding: 8px; overflow-y: auto; flex-grow: 1; align-content: start; }
         .item-card { background: var(--success); border-radius: 6px; height: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; padding: 4px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.1); }
         .item-card.has-price { background: var(--danger); }
-        .item-text { font-weight: 900; text-transform: uppercase; text-shadow: var(--shadow); width: 100%; line-height: 1; }
-        .item-price-tag { font-size: 10px; margin-top: 3px; font-weight: bold; text-shadow: var(--shadow); }
+        .item-text { font-weight: 900; text-transform: uppercase; text-shadow: var(--shadow); width: 100%; line-height: 1; pointer-events: none; }
+        .item-price-tag { font-size: 10px; margin-top: 3px; font-weight: bold; text-shadow: var(--shadow); pointer-events: none; }
         .delete-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; border-radius: 6px; }
         .item-card.selected .delete-overlay { display: flex; }
         .item-card.selected .delete-overlay::after { content: 'X'; color: #fff; font-size: 40px; font-weight: 900; }
@@ -141,50 +141,61 @@
         db.ref('v5_app_state/history').set(history);
     }
 
-    function toggleBlur(show) {
-        if(show) document.body.classList.add('modal-open');
-        else document.body.classList.remove('modal-open');
-    }
-    
     function render() {
-        const grid = $('mainGrid');
-        grid.innerHTML = '';
+        const grid = $('mainGrid'); grid.innerHTML = '';
         let total = 0, taken = 0, todo = 0;
-
         currentList.forEach((item, i) => {
             const card = document.createElement('div');
             card.className = `item-card ${item.price > 0 ? 'has-price' : ''}`;
             let fSize = item.name.length > 10 ? "11px" : (item.name.length > 6 ? "14px" : "16px");
             card.innerHTML = `<div class="item-text" style="font-size:${fSize}">${item.name}</div>${item.price > 0 ? `<div class="item-price-tag">${item.price} TL</div>` : ''}<div class="delete-overlay"></div>`;
-
-            card.onmousedown = card.ontouchstart = () => {
+            card.onmousedown = card.ontouchstart = (e) => {
                 isLongPress = false;
-                pressTimer = setTimeout(() => {
-                    isLongPress = true;
-                    if(navigator.vibrate) navigator.vibrate(50);
-                    openEditModal(i);
-                }, 600);
+                pressTimer = setTimeout(() => { isLongPress = true; if(navigator.vibrate) navigator.vibrate(50); openEditModal(i); }, 600);
             };
             card.onmouseup = card.ontouchend = () => clearTimeout(pressTimer);
-            card.onclick = () => {
-                if(isLongPress) return;
-                if(deleteMode) {
-                    if(selectedForDelete.has(i)) { selectedForDelete.delete(i); card.classList.remove('selected'); }
-                    else { selectedForDelete.add(i); card.classList.add('selected'); }
-                } else { openEditModal(i); }
-            };
+            card.onclick = () => { if(isLongPress) return; if(deleteMode) { if(selectedForDelete.has(i)) { selectedForDelete.delete(i); card.classList.remove('selected'); } else { selectedForDelete.add(i); card.classList.add('selected'); } } else { openEditModal(i); } };
             grid.appendChild(card);
             if(item.price > 0) { total += parseFloat(item.price); taken++; } else { todo++; }
         });
-
         $('total-value').innerText = total.toFixed(2);
         $('total-items-count').innerText = currentList.length;
         $('count-taken').innerText = taken;
         $('count-todo').innerText = todo;
     }
 
+    function updateHistoryUI() {
+        const box = $('historyBox'); box.innerHTML = '';
+        history.sort((a,b) => b.id - a.id).forEach((h, i) => {
+            const el = document.createElement('div');
+            el.className = `history-item ${h.id === currentListId ? 'active-list' : ''}`;
+            el.innerHTML = `<span>${h.name}</span><span style="color:var(--accent)">${h.data ? h.data.length : 0} ÜRÜN</span>`;
+            el.onmousedown = el.ontouchstart = (e) => {
+                isLongPress = false;
+                pressTimer = setTimeout(() => { isLongPress = true; if(navigator.vibrate) navigator.vibrate(50); closeSideMenu(); openHistAction(i); }, 2000);
+            };
+            el.onmouseup = el.ontouchend = () => clearTimeout(pressTimer);
+            el.onclick = () => { if(isLongPress) return; currentListId = h.id; currentListName = h.name; currentList = [...h.data]; sync(); closeSideMenu(); };
+            box.appendChild(el);
+        });
+    }
+
+    $('mNewList').onclick = () => {
+        // Mevcut listeyi history'e ekle (eğer doluysa ve zaten orada yoksa)
+        const exists = history.find(x => x.id === currentListId);
+        if(!exists && currentList.length > 0) {
+            history.unshift({id: currentListId, name: currentListName, data: [...currentList]});
+        } else if(exists) {
+            exists.data = [...currentList];
+        }
+        currentListId = Date.now();
+        currentListName = "LİSTE " + (history.length + 1);
+        currentList = [];
+        sync(); closeSideMenu();
+    };
+
     function openAddModal() {
-        toggleBlur(true);
+        document.body.classList.add('modal-open');
         $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" id="btnCloseM">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
         $('btnSaveAdd').onclick = () => { const n = $('inName').value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); sync(); } closeGModal(); };
@@ -192,7 +203,7 @@
     }
 
     function openEditModal(i) {
-        toggleBlur(true);
+        document.body.classList.add('modal-open');
         const item = currentList[i];
         $('mContent').innerHTML = `<h3>${item.name}</h3><input type="text" id="edName" value="${item.name}"><input type="number" id="edPrice" placeholder="FİYAT" value="${item.price || ''}"><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">TAMAM</button><button class="btn-cancel" id="btnCloseE">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
@@ -200,56 +211,11 @@
         $('btnCloseE').onclick = closeGModal;
     }
 
-    function openStatusModal(type) {
-        toggleBlur(true);
-        const filtered = currentList.filter(x => type === 'taken' ? x.price > 0 : x.price == 0);
-        let listHtml = filtered.map(x => `<div class="list-row"><span>${x.name}</span><span>${x.price > 0 ? x.price + ' TL' : ''}</span></div>`).join('');
-        $('mContent').innerHTML = `<h3>${type === 'taken' ? 'ALINANLAR' : 'ALINACAKLAR'}</h3><div class="scroll-area">${listHtml || 'BOŞ'}</div><div class="fixed-footer-banner">TOPLAM: ${filtered.reduce((a, b) => a + parseFloat(b.price || 0), 0).toFixed(2)} TL</div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseS">KAPAT</button>`;
-        $('gModal').style.display = 'flex';
-        $('btnCloseS').onclick = closeGModal;
-    }
-
-    function openBulkModal() {
-        toggleBlur(true);
-        const currentNames = currentList.map(x => x.name).join('\n');
-        $('mContent').innerHTML = `<h3>LİSTE YAP</h3><textarea id="bulkData" rows="10">${currentNames}</textarea><div class="modal-btns"><button class="btn-ok" id="btnSaveBulk">GÜNCELLE</button><button class="btn-cancel" id="btnCloseB">İPTAL</button></div>`;
-        $('gModal').style.display = 'flex';
-        $('btnSaveBulk').onclick = () => {
-            const lines = $('bulkData').value.split('\n');
-            let newList = [];
-            lines.forEach(line => { const n = line.trim().toUpperCase(); if(n) { const ex = currentList.find(x => x.name === n); newList.push(ex ? ex : {name: n, price: 0}); } });
-            currentList = newList; sync(); closeGModal();
-        };
-        $('btnCloseB').onclick = closeGModal;
-    }
-
-    function closeGModal() { $('gModal').style.display='none'; toggleBlur(false); }
-
-    function updateHistoryUI() {
-        const box = $('historyBox');
-        box.innerHTML = history.map((h, i) => `<div class="history-item ${h.id === currentListId ? 'active-list' : ''}" id="histItem-${i}"><span>${h.name}</span><span style="color:var(--accent)">${h.data ? h.data.length : 0} ÜRÜN</span></div>`).join('');
-        history.forEach((h, i) => {
-            const el = $(`histItem-${i}`);
-            if(!el) return;
-            el.onmousedown = el.ontouchstart = () => { 
-                isLongPress = false; 
-                pressTimer = setTimeout(() => { 
-                    isLongPress = true; 
-                    if(navigator.vibrate) navigator.vibrate(50); 
-                    closeSideMenu(); 
-                    openHistAction(i); 
-                }, 2000); // 2 saniye basılı tutunca açılır
-            };
-            el.onmouseup = el.ontouchend = () => clearTimeout(pressTimer);
-            el.onclick = () => { if(isLongPress) return; currentListId = h.id; currentListName = h.name; currentList = [...h.data]; sync(); closeSideMenu(); };
-        });
-    }
-
     function openHistAction(i) {
-        toggleBlur(true);
+        document.body.classList.add('modal-open');
         $('mContent').innerHTML = `<h3>LİSTE AYARI</h3><input type="text" id="hNewName" value="${history[i].name}"><div class="modal-btns"><button class="btn-ok" id="btnRenH">ADLANDIR</button><button class="btn-cancel" style="background:var(--danger)" id="btnOpenDelH">SİL</button></div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseH">KAPAT</button>`;
         $('gModal').style.display = 'flex';
-        $('btnRenH').onclick = () => { history[i].name = $('hNewName').value.toUpperCase(); if(history[i].id === currentListId) currentListName = history[i].name; sync(); closeGModal(); };
+        $('btnRenH').onclick = () => { history[i].name = $('hNewName').value.toUpperCase(); sync(); closeGModal(); };
         $('btnCloseH').onclick = closeGModal;
         $('btnOpenDelH').onclick = () => {
             $('mContent').innerHTML = `<h3>SİLİNSİN Mİ?</h3><p style="text-align:center;">"${history[i].name}" SİLİNECEK.</p><div class="modal-btns"><button class="btn-ok" style="background:var(--danger)" id="btnConfirmDelH">SİL</button><button class="btn-cancel" id="btnAbortH">İPTAL</button></div>`;
@@ -258,29 +224,40 @@
         };
     }
 
-    $('menuBtn').onclick = () => { $('sideMenu').classList.add('open'); toggleBlur(true); };
-    function closeSideMenu() { $('sideMenu').classList.remove('open'); toggleBlur(false); }
-    
+    function closeGModal() { $('gModal').style.display='none'; document.body.classList.remove('modal-open'); }
+    $('menuBtn').onclick = () => { $('sideMenu').classList.add('open'); document.body.classList.add('modal-open'); };
+    function closeSideMenu() { $('sideMenu').classList.remove('open'); document.body.classList.remove('modal-open'); }
     $('addQuick').onclick = openAddModal;
     $('mBulkList').onclick = openBulkModal;
     $('delQuick').onclick = () => { deleteMode = true; selectedForDelete.clear(); $('deleteControls').style.display = 'flex'; $('mainWrapper').style.opacity = "0.5"; };
     $('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(); };
     $('confirmDel').onclick = () => { currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; sync(); };
-    
-    $('mNewList').onclick = () => {
-        const newId = Date.now();
-        const newName = "LİSTE " + (history.length + 1);
-        history.unshift({id: newId, name: newName, data: []});
-        currentList = []; currentListId = newId; currentListName = newName;
-        sync(); closeSideMenu();
-    };
-
     $('btnShowTaken').onclick = () => openStatusModal('taken');
     $('btnShowTodo').onclick = () => openStatusModal('todo');
 
-    window.onclick = (e) => {
-        if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); }
-    };
+    function openBulkModal() {
+        document.body.classList.add('modal-open');
+        const currentNames = currentList.map(x => x.name).join('\n');
+        $('mContent').innerHTML = `<h3>LİSTE YAP</h3><textarea id="bulkData" rows="10">${currentNames}</textarea><div class="modal-btns"><button class="btn-ok" id="btnSaveBulk">GÜNCELLE</button><button class="btn-cancel" id="btnCloseB">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('btnSaveBulk').onclick = () => {
+            const lines = $('bulkData').value.split('\n'); let newList = [];
+            lines.forEach(line => { const n = line.trim().toUpperCase(); if(n) { const ex = currentList.find(x => x.name === n); newList.push(ex ? ex : {name: n, price: 0}); } });
+            currentList = newList; sync(); closeGModal();
+        };
+        $('btnCloseB').onclick = closeGModal;
+    }
+
+    function openStatusModal(type) {
+        document.body.classList.add('modal-open');
+        const filtered = currentList.filter(x => type === 'taken' ? x.price > 0 : x.price == 0);
+        let listHtml = filtered.map(x => `<div class="list-row"><span>${x.name}</span><span>${x.price > 0 ? x.price + ' TL' : ''}</span></div>`).join('');
+        $('mContent').innerHTML = `<h3>${type === 'taken' ? 'ALINANLAR' : 'ALINACAKLAR'}</h3><div class="scroll-area">${listHtml || 'BOŞ'}</div><div class="fixed-footer-banner">TOPLAM: ${filtered.reduce((a, b) => a + parseFloat(b.price || 0), 0).toFixed(2)} TL</div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseS">KAPAT</button>`;
+        $('gModal').style.display = 'flex';
+        $('btnCloseS').onclick = closeGModal;
+    }
+
+    window.onclick = (e) => { if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); } };
 </script>
 </body>
 </html>
