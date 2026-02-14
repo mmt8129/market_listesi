@@ -149,7 +149,25 @@
     <div class="modal-content" id="mContent"></div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    
 <script>
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA9whlWMrlyF6GMnWBK7SQA76qNFpO7RkQ",
+  authDomain: "market-listesi-d9338.firebaseapp.com",
+  projectId: "market-listesi-d9338",
+  storageBucket: "market-listesi-d9338.firebasestorage.app",
+  messagingSenderId: "91497340883",
+  appId: "1:91497340883:web:6e9280b4a70d0a6f38d926",
+  databaseURL: "https://market-listesi-d9338-default-rtdb.firebaseio.com"
+};
+
+// Firebase'i Başlat
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+    
     let currentList = [];
     let currentListId = Date.now();
     let currentListName = "YENİ LİSTE";
