@@ -1,702 +1,315 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
-<title>Liste</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<style>
-  body {
-    margin: 0;
-    font-family: sans-serif;
-    background-color: white;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* Sayfanın tam yüksekliğini alması için */
-  }
-  .header {
-    background-color: #333;
-    padding: 15px 0;
-    text-align: center;
-    font-size: 20px;
-    font-weight: bold;
-  }
-  .container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(auto, auto);
-    grid-gap: 3px;
-    padding: 3px;
-    box-sizing: border-box;
-    flex-grow: 1; /* Kalan alanı doldurması için */
-  }
-  .button-container {
-    display: flex;
-    flex-direction: column;
-  }
-  .big-button {
-    background-color: #555; //#555
-    border: 1px solid #777;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 16px;
-    cursor: pointer;
-    text-align: center;
-    color: white;
-    height: 100px;
-  }
-  .small-button {
-    background-color: #777; //#777
-    border: 1px solid #999;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    text-align: center;
-    color: white;
-    height: 8px;
-    padding: 8px 12px; /* Biraz daha geniş ve yüksek iç boşluk */
-    margin-top: -8px; /* Küçük butonları yukarı kaydır */
-    min-width: 20px; /* Minimum genişlik */
-  }
-  #input-area {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #444;
-    border: 1px solid #777;
-    padding: 20px;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 3;
-  }
-  #input-area input[type="text"] {
-    padding: 10px;
-    font-size: 16px;
-    background-color: #333;
-    color: white;
-    border: 1px solid #777;
-  }
-  #input-area button {
-    padding: 10px 15px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #666;
-    color: white;
-    border: 1px solid #777;
-  }
-  .filled {
-    background-color: green;
-    color: white;
-    font-weight: bold;
-  }
-  .double-clicked {
-    background-color: red;
-    color: white;
-    font-weight: bold;
-  }
-  .special-button {
-    font-size: 17px;
-    font-weight: bold;
-    background-color: darkred;
-    color: white;
-    height: 40px;
-    display: flex; /* Flexbox'ı etkinleştir */
-    justify-content: center; /* Yatayda ortala */
-    align-items: center; /* Dikeyde ortala */
-  }
-  #delete-button {
-    background-color: darkred;
-    color: white;
-  }
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-  .dropdown-content {
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white; // #f9f9f9
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 2;
-  }
-  .dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-    cursor: pointer;
-    text-align: center;
-  }
-  .dropdown-content a:hover {background-color: #ddd;}
-  #share-import-button {
-    background-color: #808080;
-    color: white;
-  }
-  #data-input-area {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #444;
-    border: 1px solid #777;
-    padding: 20px;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 3;
-  }
-  #data-input-area input[type="text"] {
-    padding: 10px;
-    font-size: 16px;
-    background-color: #333;
-    color: white;
-    border: 1px solid #777;
-  }
-  #data-input-area button {
-    padding: 10px 15px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #666;
-    color: white;
-    border: 1px solid #777;
-  }
-  .data-input-buttons {
-    display: flex;
-    justify-content: space-around;
-  }
-  .total-area {
-    background-color: #333;
-    color: lightgreen;
-    padding: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 18px;
-    font-weight: bold;
-  }
-  #total-value {
-    font-size: 24px;
-  }
-  #json-input-area {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #444;
-    border: 1px solid #777;
-    padding: 20px;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 3;
-  }
-  #json-input-area textarea {
-    padding: 10px;
-    font-size: 16px;
-    background-color: #333;
-    color: white;
-    border: 1px solid #777;
-  }
-  #json-input-area button {
-    padding: 10px 15px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #666;
-    color: white;
-    border: 1px solid #777;
-  }
-    .turquoise-button {
-    background-color: darkgreen; /* koyu yeşil rengi */
-    color: white; /* Yazı rengi okunabilir olsun */
-  }
-    #new-turquoise-button {
-    grid-column: span 4; /* Yeni butonun 4 sütunu kaplamasını sağla */
-  }
-    .json-input-buttons {
-    display: flex;
-    justify-content: space-around;
-    gap: 10px; /* Butonlar arasına boşluk */
-  }
-</style>
+    <title>PRO LISTE V5</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #38bdf8;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --text: #f8fafc;
+            --shadow: 2px 2px 3px rgba(0,0,0,1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* BLUR KONTROLÜ */
+        .blur-target { transition: filter 0.3s ease; }
+        body.modal-open .blur-target { filter: blur(8px); pointer-events: none; }
+
+        /* ÜST PANEL */
+        .top-fixed-bar { background: var(--card); padding: 10px; border-bottom: 2px solid var(--accent); z-index: 100; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; }
+        .menu-icon { font-size: 35px; cursor: pointer; color: var(--accent); }
+        .total-display { text-align: center; flex-grow: 1; }
+        #total-value { font-size: 30px; font-weight: 900; color: var(--accent); }
+        .item-count-badge { font-size: 11px; font-weight: bold; opacity: 0.9; }
+
+        .action-btns { display: flex; gap: 5px; }
+        .circle-btn { width: 42px; height: 42px; border-radius: 50%; border: none; font-size: 20px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; }
+        .btn-plus { background: var(--success); }
+        .btn-minus { background: var(--danger); }
+        .btn-bulk { background: var(--accent); font-size: 14px; }
+
+        .stats-row { display: flex; justify-content: space-around; margin-top: 12px; font-size: 13px; font-weight: 800; }
+        .stat-box { padding: 5px 10px; background: rgba(0,0,0,0.2); border-radius: 5px; cursor: pointer; }
+
+        /* ANA LİSTE */
+        .container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 6px;
+            padding: 8px;
+            overflow-y: auto;
+            flex-grow: 1;
+            align-content: start;
+        }
+
+        .item-card {
+            background: var(--success);
+            border-radius: 6px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 4px;
+            box-sizing: border-box;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .item-card.has-price { background: var(--danger); }
+        .item-text { font-weight: 900; text-transform: uppercase; text-shadow: var(--shadow); text-align: center; width: 100%; line-height: 1; }
+        .item-price-tag { font-size: 10px; margin-top: 3px; font-weight: bold; text-shadow: var(--shadow); }
+
+        /* SİLME MODU */
+        .delete-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; border-radius: 6px; }
+        .item-card.selected .delete-overlay { display: flex; }
+        .item-card.selected .delete-overlay::after { content: 'X'; color: #fff; font-size: 40px; font-weight: 900; }
+
+        /* MODALLAR */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-content { background: var(--card); width: 90%; padding: 20px; border-radius: 15px; border: 2px solid var(--accent); box-sizing: border-box; max-height: 80vh; display: flex; flex-direction: column; }
+        
+        .scroll-area { overflow-y: auto; flex-grow: 1; margin: 10px 0; }
+        .list-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #334155; font-weight: bold; text-transform: uppercase; }
+        .fixed-footer-banner { border-top: 3px solid var(--accent); padding-top: 10px; text-align: center; font-size: 20px; font-weight: 900; color: var(--success); }
+
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px; box-sizing: border-box; text-transform: uppercase; font-weight: bold; }
+        .modal-btns { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-btns button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-weight: 900; color: white; }
+        .btn-ok { background: var(--accent); }
+        .btn-cancel { background: #475569; }
+
+        /* YAN MENÜ */
+        .side-menu { position: fixed; top: 0; left: -85%; width: 80%; height: 100%; background: var(--card); z-index: 2500; transition: 0.4s; padding: 25px; box-shadow: 10px 0 20px rgba(0,0,0,0.6); display: flex; flex-direction: column; }
+        .side-menu.open { left: 0; }
+        .menu-btn { width: 100%; background: #334155; color: white; border: none; padding: 15px; border-radius: 10px; margin-bottom: 12px; font-weight: 800; text-align: left; }
+        .history-list { margin-top: 10px; border: 2px solid #334155; flex-grow: 1; overflow-y: auto; border-radius: 10px; background: rgba(0,0,0,0.2); }
+        .history-item { padding: 15px; border-bottom: 1px solid #334155; font-size: 14px; display: flex; justify-content: space-between; font-weight: bold; }
+        .history-item.active-list { border: 2px solid var(--accent); background: rgba(56, 189, 248, 0.1); border-radius: 8px; }
+
+        .floating-confirm { position: fixed; bottom: 30px; left: 0; width: 100%; display: none; justify-content: center; gap: 20px; z-index: 1500; }
+    </style>
 </head>
 <body>
 
-  <div class="header">LİSTE</div>
-
-  <div class="container">
-    <div class="button special-button turquoise-button" id="new-turquoise-button">LİSTE OLUŞTUR</div>
-
-    <div class="button special-button" id="write-button">YAZ</div>
-    <div class="button special-button" id="edit-button">DEĞİŞTİR</div>
-    <div class="button special-button" id="delete-button">SİL</div>
-    <div class="dropdown">
-      <button class="button special-button" id="share-import-button">LİSTE AL-VER</button>
-      <div id="share-import-menu" class="dropdown-content">
-        <a href="#" id="share-option">Liste Gönder</a>
-        <a href="#" id="import-option">Liste Al</a>
+<div class="blur-target" id="mainWrapper">
+    <div class="top-fixed-bar">
+        <div class="header-row">
+            <div class="menu-icon" id="menuBtn">☰</div>
+            <div class="total-display">
+                <div id="total-value">0.00</div>
+                <div class="item-count-badge">TOPLAM ÜRÜN: <span id="total-items-count">0</span></div>
+            </div>
+            <div class="action-btns">
+                <button class="circle-btn btn-bulk" id="mBulkList">+++</button>
+                <button class="circle-btn btn-plus" id="addQuick">+</button>
+                <button class="circle-btn btn-minus" id="delQuick">-</button>
+            </div>
+        </div>
+        <div class="stats-row">
+            <div class="stat-box" id="btnShowTaken">ALINANLAR: <span id="count-taken">0</span></div>
+            <div class="stat-box" id="btnShowTodo">ALINACAKLAR: <span id="count-todo">0</span></div>
         </div>
     </div>
-    <div class="button-container" data-index="0">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="1">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="2">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="3">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="4">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="5">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="6">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="7">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="8">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="9">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="10">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="11">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="12">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="13">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="14">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="15">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="16">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="17">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="18">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="19">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="20">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="21">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="22">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-    <div class="button-container" data-index="23">
-      <div class="big-button"></div>
-      <div class="small-button"></div>
-    </div>
-  </div>
+    <div class="container" id="mainGrid"></div>
+</div>
 
-  <div class="total-area">
-    <div>Toplam:</div>
-    <div id="total-value">0</div>
-  </div>
+<div class="side-menu" id="sideMenu">
+    <h2 style="color:var(--accent)">İŞLEMLER</h2>
+    <button class="menu-btn" id="mNewList">📄 YENİ LİSTE OLUŞTUR</button>
+    <h3 style="margin-top:15px; font-size: 14px; opacity: 0.6;">GEÇMİŞ LİSTELER</h3>
+    <div class="history-list" id="historyBox"></div>
+</div>
 
-  <div id="input-area">
-    <input type="text" id="text-input" placeholder="Yeni yazıyı buraya girin">
-    <button id="submit-button">Tamam</button>
-  </div>
+<div class="floating-confirm" id="deleteControls">
+    <button class="circle-btn" id="confirmDel" style="background:var(--success); width:60px; height:60px;">✓</button>
+    <button class="circle-btn" id="cancelDel" style="background:var(--danger); width:60px; height:60px;">X</button>
+</div>
 
-  <div id="data-input-area">
-    <input type="text" id="data-text-input" placeholder="Veri girin (isteğe bağlı)">
-    <div class="data-input-buttons">
-      <button id="data-submit-button">Tamam</button>
-      <button id="data-cancel-button">İptal</button>
-    </div>
-  </div>
+<div id="gModal" class="modal">
+    <div class="modal-content" id="mContent"></div>
+</div>
 
-  <div id="json-input-area" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #444; border: 1px solid #777; padding: 20px; flex-direction: column; gap: 10px; z-index: 3;">
-    <textarea id="json-paste-area" rows="10" placeholder="Listenizi Alt Alta Olacak Şekilde Yazınız!"></textarea>
-    <div class="json-input-buttons"> <button id="json-add-button">Listeye Ekle</button>
-      <button id="json-cancel-button">İptal</button> </div>
-  </div>
+<script>
+    let currentList = [];
+    let currentListId = Date.now();
+    let currentListName = "YENİ LİSTE";
+    let history = JSON.parse(localStorage.getItem('v5_history') || '[]');
+    let deleteMode = false;
+    let selectedForDelete = new Set();
+    let pressTimer;
+    let isLongPress = false;
 
-  <script>
-    const writeButton = document.getElementById('write-button');
-    const editButton = document.getElementById('edit-button');
-    const deleteButton = document.getElementById('delete-button');
-    const shareImportButton = document.getElementById('share-import-button');
-    const shareImportMenu = document.getElementById('share-import-menu');
-    const shareOption = document.getElementById('share-option');
-    const importOption = document.getElementById('import-option');
-    const inputArea = document.getElementById('input-area');
-    const textInput = document.getElementById('text-input');
-    const submitButton = document.getElementById('submit-button');
-    const bigButtons = document.querySelectorAll('.container .button-container .big-button');
-    const smallButtons = document.querySelectorAll('.container .button-container .small-button');
-    const dataInputArea = document.getElementById('data-input-area');
-    const dataTextInput = document.getElementById('data-text-input');
-    const dataSubmitButton = document.getElementById('data-submit-button');
-    const dataCancelButton = document.getElementById('data-cancel-button');
-    const buttonContainers = document.querySelectorAll('.container .button-container');
-    const totalValueElement = document.getElementById('total-value');
-    const addWithJsonOption = document.getElementById('add-with-json');
-    const jsonInputArea = document.getElementById('json-input-area');
-    const jsonPasteArea = document.getElementById('json-paste-area');
-    const jsonAddButton = document.getElementById('json-add-button');
-    const newTurquoiseButton = document.getElementById('new-turquoise-button'); // Yeni buton referansı
-    const jsonCancelButton = document.getElementById('json-cancel-button'); // Yeni İptal butonu referansı
+    const $ = id => document.getElementById(id);
 
-    let buttonIndex = localStorage.getItem('buttonIndex') ? parseInt(localStorage.getItem('buttonIndex')) : 0;
-    let isEditMode = false;
-    let selectedEditButton = null;
-    let isShareImportMenuOpen = false;
-    let selectedBigButtonIndexForData = -1;
+    function toggleBlur(show) {
+        if(show) document.body.classList.add('modal-open');
+        else document.body.classList.remove('modal-open');
+    }
+    
+    function render() {
+        const grid = $('mainGrid');
+        grid.innerHTML = '';
+        let total = 0, taken = 0, todo = 0;
 
-    function calculateTotal() {
-      let total = 0;
-      smallButtons.forEach(button => {
-        const value = parseFloat(button.textContent.replace(',', '.')); // Virgülü noktaya çevir ve ondalıklı sayı olarak oku
-        if (!isNaN(value)) {
-          total += value;
+        currentList.forEach((item, i) => {
+            const card = document.createElement('div');
+            card.className = `item-card ${item.price > 0 ? 'has-price' : ''}`;
+            let fSize = item.name.length > 10 ? "11px" : (item.name.length > 6 ? "14px" : "16px");
+            card.innerHTML = `<div class="item-text" style="font-size:${fSize}">${item.name}</div>${item.price > 0 ? `<div class="item-price-tag">${item.price} TL</div>` : ''}<div class="delete-overlay"></div>`;
+
+            card.onmousedown = card.ontouchstart = (e) => {
+                isLongPress = false;
+                pressTimer = setTimeout(() => {
+                    isLongPress = true;
+                    if(navigator.vibrate) navigator.vibrate(50);
+                    openEditModal(i);
+                }, 600);
+            };
+            card.onmouseup = card.ontouchend = () => clearTimeout(pressTimer);
+            card.onclick = () => {
+                if(isLongPress) return;
+                if(deleteMode) {
+                    if(selectedForDelete.has(i)) { selectedForDelete.delete(i); card.classList.remove('selected'); }
+                    else { selectedForDelete.add(i); card.classList.add('selected'); }
+                } else { openEditModal(i); }
+            };
+            grid.appendChild(card);
+            if(item.price > 0) { total += parseFloat(item.price); taken++; } else { todo++; }
+        });
+
+        $('total-value').innerText = total.toFixed(2);
+        $('total-items-count').innerText = currentList.length;
+        $('count-taken').innerText = taken;
+        $('count-todo').innerText = todo;
+        
+        const histIdx = history.findIndex(x => x.id === currentListId);
+        if(histIdx > -1) {
+            history[histIdx].data = [...currentList];
+            localStorage.setItem('v5_history', JSON.stringify(history));
+            updateHistoryUI();
         }
-      });
-      totalValueElement.textContent = total.toFixed(2); // İsteğe bağlı olarak sonucu iki ondalık basamakla göster
+        localStorage.setItem('v5_current', JSON.stringify({id: currentListId, name: currentListName, data: currentList}));
     }
 
-    window.onload = () => {
-      for (let i = 0; i < bigButtons.length; i++) {
-        const bigButtonText = localStorage.getItem(`bigButtonText_${i}`);
-        const bigButtonClass = localStorage.getItem(`bigButtonClass_${i}`);
-        const smallButtonText = localStorage.getItem(`smallButtonText_${i}`);
+    function openAddModal() {
+        toggleBlur(true);
+        $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" id="btnCloseM">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('btnSaveAdd').onclick = () => { const n = $('inName').value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); render(); } closeGModal(); };
+        $('btnCloseM').onclick = closeGModal;
+    }
 
-        if (bigButtonText) {
-          bigButtons[i].textContent = bigButtonText;
-        }
-        if (bigButtonClass) {
-          bigButtons[i].className = `big-button ${bigButtonClass}`;
-        }
-        if (smallButtonText) {
-          smallButtons[i].textContent = smallButtonText;
-        }
-      }
-      buttonIndex = localStorage.getItem('buttonIndex') ? parseInt(localStorage.getItem('buttonIndex')) : 0;
-      calculateTotal(); // Sayfa yüklendiğinde ilk toplamı hesapla
+    function openEditModal(i) {
+        toggleBlur(true);
+        const item = currentList[i];
+        $('mContent').innerHTML = `<h3>${item.name}</h3><input type="text" id="edName" value="${item.name}"><input type="number" id="edPrice" placeholder="FİYAT" value="${item.price || ''}"><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">TAMAM</button><button class="btn-cancel" id="btnCloseE">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('btnSaveEdit').onclick = () => { currentList[i].name = $('edName').value.trim().toUpperCase(); currentList[i].price = $('edPrice').value || 0; render(); closeGModal(); };
+        $('btnCloseE').onclick = closeGModal;
+    }
+
+    function openStatusModal(type) {
+        toggleBlur(true);
+        const filtered = currentList.filter(x => type === 'taken' ? x.price > 0 : x.price == 0);
+        let listHtml = filtered.map(x => `<div class="list-row"><span>${x.name}</span><span>${x.price > 0 ? x.price + ' TL' : ''}</span></div>`).join('');
+        $('mContent').innerHTML = `<h3>${type === 'taken' ? 'ALINANLAR' : 'ALINACAKLAR'}</h3><div class="scroll-area">${listHtml || 'BOŞ'}</div><div class="fixed-footer-banner">TOPLAM: ${filtered.reduce((a, b) => a + parseFloat(b.price || 0), 0).toFixed(2)} TL</div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseS">KAPAT</button>`;
+        $('gModal').style.display = 'flex';
+        $('btnCloseS').onclick = closeGModal;
+    }
+
+    function openBulkModal() {
+        toggleBlur(true);
+        const currentNames = currentList.map(x => x.name).join('\n');
+        $('mContent').innerHTML = `<h3>LİSTE YAP</h3><textarea id="bulkData" rows="10">${currentNames}</textarea><div class="modal-btns"><button class="btn-ok" id="btnSaveBulk">GÜNCELLE</button><button class="btn-cancel" id="btnCloseB">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('btnSaveBulk').onclick = () => {
+            const lines = $('bulkData').value.split('\n');
+            let newList = [];
+            lines.forEach(line => { const n = line.trim().toUpperCase(); if(n) { const ex = currentList.find(x => x.name === n); newList.push(ex ? ex : {name: n, price: 0}); } });
+            currentList = newList; render(); closeGModal();
+        };
+        $('btnCloseB').onclick = closeGModal;
+    }
+
+    function closeGModal() { $('gModal').style.display='none'; toggleBlur(false); }
+
+    function updateHistoryUI() {
+        const box = $('historyBox');
+        box.innerHTML = history.map((h, i) => `<div class="history-item ${h.id === currentListId ? 'active-list' : ''}" id="histItem-${i}"><span>${h.name}</span><span style="color:var(--accent)">${h.data.length} ÜRÜN</span></div>`).join('');
+        history.forEach((h, i) => {
+            const el = $(`histItem-${i}`);
+            el.onmousedown = el.ontouchstart = () => { isLongPress = false; pressTimer = setTimeout(() => { isLongPress = true; if(navigator.vibrate) navigator.vibrate(50); closeSideMenu(); openHistAction(i); }, 800); };
+            el.onmouseup = el.ontouchend = () => clearTimeout(pressTimer);
+            el.onclick = () => { if(isLongPress) return; currentListId = h.id; currentListName = h.name; currentList = [...h.data]; render(); updateHistoryUI(); closeSideMenu(); };
+        });
+    }
+
+    function openHistAction(i) {
+        toggleBlur(true);
+        $('mContent').innerHTML = `<h3>LİSTE AYARI</h3><input type="text" id="hNewName" value="${history[i].name}"><div class="modal-btns"><button class="btn-ok" id="btnRenH">ADLANDIR</button><button class="btn-cancel" style="background:var(--danger)" id="btnOpenDelH">SİL</button></div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseH">KAPAT</button>`;
+        $('gModal').style.display = 'flex';
+        $('btnRenH').onclick = () => { history[i].name = $('hNewName').value.toUpperCase(); if(history[i].id === currentListId) currentListName = history[i].name; localStorage.setItem('v5_history', JSON.stringify(history)); updateHistoryUI(); render(); closeGModal(); };
+        $('btnCloseH').onclick = closeGModal;
+        $('btnOpenDelH').onclick = () => {
+            $('mContent').innerHTML = `<h3>SİLİNSİN Mİ?</h3><p style="text-align:center;">"${history[i].name}" SİLİNECEK.</p><div class="modal-btns"><button class="btn-ok" style="background:var(--danger)" id="btnConfirmDelH">SİL</button><button class="btn-cancel" id="btnAbortH">İPTAL</button></div>`;
+            $('btnConfirmDelH').onclick = () => { const deletedId = history[i].id; history.splice(i, 1); localStorage.setItem('v5_history', JSON.stringify(history)); if(deletedId === currentListId) { currentList = []; currentListId = Date.now(); currentListName = "YENİ LİSTE"; } updateHistoryUI(); render(); closeGModal(); };
+            $('btnAbortH').onclick = closeGModal;
+        };
+    }
+
+    $('menuBtn').onclick = () => { $('sideMenu').classList.add('open'); toggleBlur(true); };
+    function closeSideMenu() { $('sideMenu').classList.remove('open'); toggleBlur(false); }
+    
+    $('addQuick').onclick = openAddModal;
+    $('mBulkList').onclick = openBulkModal;
+    $('delQuick').onclick = () => { deleteMode = true; selectedForDelete.clear(); $('deleteControls').style.display = 'flex'; $('mainWrapper').style.opacity = "0.5"; };
+    $('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(); };
+    $('confirmDel').onclick = () => { currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(); };
+    
+    $('mNewList').onclick = () => {
+        const newId = Date.now();
+        const newName = "LİSTE " + (history.length + 1);
+        history.unshift({id: newId, name: newName, data: []});
+        currentList = []; currentListId = newId; currentListName = newName;
+        localStorage.setItem('v5_history', JSON.stringify(history)); 
+        render(); updateHistoryUI(); closeSideMenu();
     };
 
-    writeButton.addEventListener('click', () => {
-      inputArea.style.display = 'flex';
-      textInput.placeholder = 'Yazınızı buraya girin';
-      isEditMode = false;
-      selectedEditButton = null;
-    });
+    $('btnShowTaken').onclick = () => openStatusModal('taken');
+    $('btnShowTodo').onclick = () => openStatusModal('todo');
 
-    submitButton.addEventListener('click', () => {
-      const textToWrite = textInput.value.trim();
-      inputArea.style.display = 'none';
-      textInput.value = '';
+    window.onclick = (e) => {
+        if(!e.target.closest('#sideMenu') && !e.target.closest('.menu-icon') && $('sideMenu').classList.contains('open')) { closeSideMenu(); }
+    };
 
-      if (!isEditMode) {
-        if (textToWrite && buttonIndex < bigButtons.length) {
-          bigButtons[buttonIndex].textContent = textToWrite;
-          bigButtons[buttonIndex].className = 'big-button filled';
-          localStorage.setItem(`bigButtonText_${buttonIndex}`, textToWrite);
-          localStorage.setItem(`bigButtonClass_${buttonIndex}`, 'filled');
-          localStorage.setItem('buttonIndex', buttonIndex + 1);
-          buttonIndex++;
-        } else if (buttonIndex >= bigButtons.length) {
-          alert('Bütün liste butonları doldu!');
+    window.onload = () => {
+        const saved = localStorage.getItem('v5_current');
+        if(saved) {
+            const parsed = JSON.parse(saved);
+            currentList = parsed.data || [];
+            currentListId = parsed.id || Date.now();
+            currentListName = parsed.name || "YENİ LİSTE";
         }
-      } else if (selectedEditButton) {
-        selectedEditButton.textContent = textToWrite;
-        const index = Array.from(bigButtons).indexOf(selectedEditButton);
-        localStorage.setItem(`bigButtonText_${index}`, textToWrite);
-        selectedEditButton = null;
-        isEditMode = false;
-        textInput.placeholder = 'Yazınızı buraya girin';
-      }
-    });
-
-    buttonContainers.forEach((container, index) => {
-      const bigButton = container.querySelector('.big-button');
-      const smallButton = container.querySelector('.small-button');
-
-      bigButton.addEventListener('click', () => {
-        if (isEditMode && bigButton.textContent) {
-          selectedEditButton = bigButton;
-          textInput.value = selectedEditButton.textContent;
-          textInput.placeholder = 'Yeni yazıyı buraya girin';
-          inputArea.style.display = 'flex';
-        }
-      });
-
-      bigButton.addEventListener('dblclick', () => {
-        if (bigButton.textContent) {
-          if (bigButton.classList.contains('filled')) {
-            bigButton.classList.remove('filled');
-            bigButton.classList.add('double-clicked');
-            localStorage.setItem(`bigButtonClass_${index}`, 'double-clicked');
-            dataInputArea.style.display = 'flex';
-            selectedBigButtonIndexForData = index;
-          } else if (bigButton.classList.contains('double-clicked')) {
-            bigButton.classList.remove('double-clicked');
-            bigButton.classList.add('filled');
-            localStorage.setItem(`bigButtonClass_${index}`, 'filled');
-            dataInputArea.style.display = 'none';
-            dataTextInput.value = '';
-            localStorage.removeItem(`smallButtonText_${index}`);
-            smallButton.textContent = '';
-            calculateTotal(); // Toplamı güncelle
-          } else {
-            bigButton.classList.add('double-clicked');
-            localStorage.setItem(`bigButtonClass_${index}`, 'double-clicked');
-            dataInputArea.style.display = 'flex';
-            selectedBigButtonIndexForData = index;
-          }
-        }
-      });
-    });
-
-    dataSubmitButton.addEventListener('click', () => {
-      if (selectedBigButtonIndexForData !== -1) {
-        const dataToWrite = dataTextInput.value.trim();
-        smallButtons[selectedBigButtonIndexForData].textContent = dataToWrite;
-        localStorage.setItem(`smallButtonText_${selectedBigButtonIndexForData}`, dataToWrite);
-        dataInputArea.style.display = 'none';
-        dataTextInput.value = '';
-        selectedBigButtonIndexForData = -1;
-        calculateTotal(); // Toplamı güncelle
-      }
-    });
-
-    dataCancelButton.addEventListener('click', () => {
-      dataInputArea.style.display = 'none';
-      dataTextInput.value = '';
-      selectedBigButtonIndexForData = -1;
-    });
-
-    editButton.addEventListener('click', () => {
-      isEditMode = !isEditMode;
-      if (isEditMode) {
-        alert('Değiştirmek istediğiniz kısma tıklayın.');
-      } else {
-        alert('Değiştirme modu kapatıldı.');
-      }
-      selectedEditButton = null;
-    });
-
-    deleteButton.addEventListener('click', () => {
-      if (confirm('Emin misiniz? Bütün liste temizlenecek!')) {
-        for (let i = 0; i < bigButtons.length; i++) {
-          bigButtons[i].textContent = '';
-          bigButtons[i].className = 'big-button';
-          smallButtons[i].textContent = '';
-          localStorage.removeItem(`bigButtonText_${i}`);
-          localStorage.removeItem(`bigButtonClass_${i}`);
-          localStorage.removeItem(`smallButtonText_${i}`);
-        }
-        buttonIndex = 0;
-        localStorage.setItem('buttonIndex', 0);
-        calculateTotal(); // Toplamı sıfırla
-      }
-    });
-
-    shareImportButton.addEventListener('click', () => {
-      isShareImportMenuOpen = !isShareImportMenuOpen;
-      shareImportMenu.style.display = isShareImportMenuOpen ? 'block' : 'none';
-    });
-
-    shareOption.addEventListener('click', () => {
-      let dataToShare = [];
-      for (let i = 0; i < bigButtons.length; i++) {
-        dataToShare.push({
-          bigButtonText: bigButtons[i].textContent,
-          bigButtonClass: bigButtons[i].className,
-          smallButtonText: smallButtons[i].textContent
-        });
-      }
-      const jsonData = JSON.stringify(dataToShare);
-      const shareText = `Alışveriş Listesi (Büyük/Küçük Butonlar):\n${jsonData}`;
-      navigator.share({
-        title: 'Alışveriş Listesi (Büyük/Küçük Butonlar)',
-        text: shareText
-      }).catch((error) => {
-        prompt('Listeyi kopyalayıp paylaşabilirsiniz:', shareText);
-      });
-      isShareImportMenuOpen = false;
-      shareImportMenu.style.display = 'none';
-    });
-
-    importOption.addEventListener('click', () => {
-      const importedData = prompt('Paylaşılan listeyi buraya yapıştırın:');
-      if (importedData) {
-        let jsonData = importedData.trim();
-        if (jsonData.startsWith('Alışveriş Listesi (Büyük/Küçük Butonlar):')) {
-          jsonData = jsonData.substring('Alışveriş Listesi (Büyük/Küçük Butonlar):'.length).trim();
-        }
-        try {
-          const parsedData = JSON.parse(jsonData);
-          if (Array.isArray(parsedData)) {
-            let importCount = 0;
-            for (let i = 0; i < bigButtons.length; i++) {
-              if (importCount < parsedData.length) {
-                if (!bigButtons[i].textContent) {
-                  bigButtons[i].textContent = parsedData[importCount].bigButtonText || '';
-                  bigButtons[i].className = `big-button ${parsedData[importCount].bigButtonClass || ''}`.trim();
-                  smallButtons[i].textContent = parsedData[importCount].smallButtonText || '';
-                  localStorage.setItem(`bigButtonText_${i}`, parsedData[importCount].bigButtonText || '');
-                  localStorage.setItem(`bigButtonClass_${i}`, parsedData[importCount].bigButtonClass || '');
-                  localStorage.setItem(`smallButtonText_${i}`, parsedData[importCount].smallButtonText || '');
-                  importCount++;
-                }
-              } else {
-                break; // Bütün import edilenler eklendi, döngüden çık
-              }
-            }
-            // Sayfadaki tüm butonları kontrol ederek buttonIndex'i güncelle
-            let filledCount = 0;
-            for (let i = 0; i < bigButtons.length; i++) {
-              if (bigButtons[i].textContent) {
-                filledCount++;
-              }
-            }
-            buttonIndex = filledCount;
-            localStorage.setItem('buttonIndex', buttonIndex);
-            calculateTotal(); // İçe aktırma sonrası toplamı güncelle
-            alert('Liste başarıyla alındı ve mevcut listenize eklendi!');
-          } else {
-            alert('Geçersiz liste formatı!');
-          }
-        } catch (error) {
-          alert('Geçersiz liste formatı!');
-        }
-      }
-      isShareImportMenuOpen = false;
-      shareImportMenu.style.display = 'none';
-    });
-
-    // addWithJsonOption.addEventListener('click', () => { // Bu event listener kaldırıldı veya yorum satırı yapıldı
-    //   jsonInputArea.style.display = 'flex';
-    //   isShareImportMenuOpen = false;
-    //   shareImportMenu.style.display = 'none';
-    // });
-
-    // Yeni butonun event listener'ı
-    newTurquoiseButton.addEventListener('click', () => {
-      jsonInputArea.style.display = 'flex'; // JSON giriş alanını göster
-      isShareImportMenuOpen = false; // Liste Al-Ver menüsünü kapat (eğer açıksa)
-      shareImportMenu.style.display = 'none'; // Liste Al-Ver menüsünü gizle (eğer açıksa)
-    });
-
-    // JSON İptal butonu event listener'ı
-    jsonCancelButton.addEventListener('click', () => {
-      jsonInputArea.style.display = 'none'; // JSON giriş alanını gizle
-      jsonPasteArea.value = ''; // Metin alanını temizle
-    });
-
-
-    function addItemsWithJson() {
-      const inputText = jsonPasteArea.value.trim();
-      if (inputText) {
-        const lines = inputText.split('\n');
-        const parsedData = lines.map(line => ({
-          bigButtonText: line.trim(),
-          bigButtonClass: 'big-button filled',
-          smallButtonText: ''
-        }));
-
-        let importCount = 0;
-        for (let i = 0; i < bigButtons.length; i++) {
-          if (importCount < parsedData.length) {
-            if (!bigButtons[i].textContent) {
-              bigButtons[i].textContent = parsedData[importCount].bigButtonText || '';
-              bigButtons[i].className = `big-button ${parsedData[importCount].bigButtonClass || ''}`.trim();
-              smallButtons[i].textContent = parsedData[importCount].smallButtonText || '';
-              localStorage.setItem(`bigButtonText_${i}`, parsedData[importCount].bigButtonText || '');
-              localStorage.setItem(`bigButtonClass_${i}`, parsedData[importCount].bigButtonClass || '');
-              localStorage.setItem(`smallButtonText_${i}`, parsedData[importCount].smallButtonText || '');
-              importCount++;
-            }
-          } else {
-            break; // Bütün import edilenler eklendi, döngüden çık
-          }
-        }
-        // Sayfadaki tüm butonları kontrol ederek buttonIndex'i güncelle
-        let filledCount = 0;
-        for (let i = 0; i < bigButtons.length; i++) {
-          if (bigButtons[i].textContent) {
-            filledCount++;
-          }
-        }
-        buttonIndex = filledCount;
-        localStorage.setItem('buttonIndex', buttonIndex);
-        calculateTotal(); // İçe aktırma sonrası toplamı güncelle
-        jsonInputArea.style.display = 'none'; // Giriş alanını gizle
-        jsonPasteArea.value = ''; // Metin alanını temizle
-        alert('Metinler listeye başarıyla eklendi!');
-      } else {
-        alert('Lütfen metin girin!');
-      }
-    }
-
-    jsonAddButton.addEventListener('click', addItemsWithJson);
-
-    window.addEventListener('click', (event) => {
-      if (!event.target.matches('#share-import-button')) {
-        if (isShareImportMenuOpen) {
-          shareImportMenu.style.display = 'none';
-          isShareImportMenuOpen = false;
-        }
-      }
-    });
-  </script>
-
+        updateHistoryUI(); render();
+    };
+</script>
 </body>
 </html>
