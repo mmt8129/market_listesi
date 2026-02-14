@@ -215,6 +215,7 @@
         toggleBlur(true);
         $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" id="btnCloseM">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
+        setTimeout(() => { $('inName').focus(); }, 150);
         $('btnSaveAdd').onclick = () => { const n = $('inName').value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); render(); } closeGModal(); };
         $('btnCloseM').onclick = closeGModal;
     }
@@ -224,6 +225,7 @@
         const item = currentList[i];
         $('mContent').innerHTML = `<h3>${item.name}</h3><input type="text" id="edName" value="${item.name}"><input type="number" id="edPrice" placeholder="FİYAT" value="${item.price || ''}"><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">TAMAM</button><button class="btn-cancel" id="btnCloseE">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
+         setTimeout(() => { $('inName').focus(); }, 150);
         $('btnSaveEdit').onclick = () => { currentList[i].name = $('edName').value.trim().toUpperCase(); currentList[i].price = $('edPrice').value || 0; render(); closeGModal(); };
         $('btnCloseE').onclick = closeGModal;
     }
