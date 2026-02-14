@@ -1,47 +1,42 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5 - FIREBASE FIX</title>
+    <title>PRO LISTE V5 - FIREBASE FINAL</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --success: #22c55e; --danger: #ef4444; --text: #f8fafc; }
-        body { margin: 0; font-family: sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .top-fixed-bar { background: var(--card); padding: 10px; border-bottom: 2px solid var(--accent); }
-        .header-row { display: flex; justify-content: space-between; align-items: center; }
-        #total-value { font-size: 30px; font-weight: 900; color: var(--accent); }
-        .container { display: grid; grid-template-columns: repeat(4, 1fr); grid-gap: 6px; padding: 8px; overflow-y: auto; flex-grow: 1; align-content: start; }
-        .item-card { background: var(--success); border-radius: 6px; height: 60px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-weight: 900; font-size: 14px; position: relative; }
-        .item-card.has-price { background: var(--danger); }
-        .item-price-tag { font-size: 10px; margin-top: 2px; }
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: var(--card); width: 90%; padding: 20px; border-radius: 15px; border: 2px solid var(--accent); }
-        .side-menu { position: fixed; top: 0; left: -100%; width: 75%; height: 100%; background: var(--card); z-index: 2500; transition: 0.3s; padding: 20px; box-sizing: border-box; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { background: var(--card); padding: 15px; border-bottom: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center; }
+        #total-value { font-size: 28px; font-weight: 900; color: var(--accent); }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 10px; overflow-y: auto; flex-grow: 1; align-content: start; }
+        .card { background: var(--success); border-radius: 8px; height: 65px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-weight: bold; font-size: 13px; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
+        .card.has-price { background: var(--danger); }
+        .price-tag { font-size: 10px; margin-top: 4px; opacity: 0.9; }
+        .side-menu { position: fixed; top: 0; left: -100%; width: 80%; height: 100%; background: var(--card); z-index: 1000; transition: 0.3s; padding: 20px; box-sizing: border-box; box-shadow: 5px 0 15px rgba(0,0,0,0.5); }
         .side-menu.open { left: 0; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #000; color: #fff; border: 1px solid var(--accent); box-sizing: border-box; }
-        .circle-btn { width: 45px; height: 45px; border-radius: 50%; border: none; color: #fff; font-weight: bold; }
+        .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:2000; }
+        .modal-content { background:var(--card); width:90%; padding:20px; border-radius:15px; border:2px solid var(--accent); }
+        input { width:100%; padding:12px; margin:10px 0; background:#000; color:#fff; border:1px solid var(--accent); border-radius:8px; box-sizing:border-box; }
+        button { border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
     </style>
 </head>
 <body>
 
-<div id="mainApp">
-    <div class="top-fixed-bar">
-        <div class="header-row">
-            <div onclick="openMenu()" style="font-size:30px; cursor:pointer">☰</div>
-            <div id="total-value">0.00</div>
-            <div>
-                <button class="circle-btn" style="background:var(--success)" onclick="openAdd()">+</button>
-            </div>
-        </div>
-    </div>
-    <div class="container" id="mainGrid"></div>
+<div class="top-bar">
+    <div onclick="toggleMenu(true)" style="font-size:30px;">☰</div>
+    <div id="total-value">0.00</div>
+    <button onclick="openAdd()" style="background:var(--success); color:#fff; padding:10px 15px; font-size:20px;">+</button>
 </div>
 
+<div class="grid" id="mainGrid"></div>
+
 <div id="sideMenu" class="side-menu">
-    <h2>MENÜ</h2>
-    <button onclick="newList()" style="width:100%; padding:15px; background:var(--accent); border:none; color:#fff; font-weight:bold">YENİ LİSTE</button>
-    <h3>GEÇMİŞ</h3>
-    <div id="historyBox"></div>
+    <div onclick="toggleMenu(false)" style="font-size:30px; text-align:right;">✕</div>
+    <h2>İŞLEMLER</h2>
+    <button onclick="createNewList()" style="width:100%; padding:15px; background:var(--accent); color:#fff; margin-bottom:20px;">📄 YENİ LİSTE OLUŞTUR</button>
+    <h3>GEÇMİŞ LİSTELER</h3>
+    <div id="historyBox" style="overflow-y:auto; max-height:60vh;"></div>
 </div>
 
 <div id="gModal" class="modal">
@@ -67,14 +62,12 @@ const db = firebase.database();
 
 let currentList = [];
 let history = [];
-let isInitialLoad = true; // 🔥 SİLİNMEYİ ÖNLEYEN KİLİT
+let isDataReady = false; // 🔥 SİLİNMEYİ ENGELLEYEN KRİTİK KİLİT
 
-const $ = id => document.getElementById(id);
-
-// 🔹 VERİLERİ ÇEK
+// 🔹 FİREBASE'DEN VERİ ÇEK (OTOMATİK GÜNCELLEME)
 db.ref('products').on('value', snap => {
     currentList = snap.val() || [];
-    isInitialLoad = false; // Veri geldi, artık yazma yapılabilir
+    isDataReady = true; // Veri en az bir kez başarıyla geldi
     renderUI();
 });
 
@@ -83,76 +76,82 @@ db.ref('history').on('value', snap => {
     renderHistory();
 });
 
+// 🔹 FİREBASE'E KAYDET
 function sync() {
-    if(isInitialLoad) return; // Veri çekilmeden asla üzerine yazma!
+    if (!isDataReady) return; // Veri çekilmeden yazmaya kalkma!
     db.ref('products').set(currentList);
     db.ref('history').set(history);
 }
 
 function renderUI() {
-    const grid = $('mainGrid');
+    const grid = document.getElementById('mainGrid');
     grid.innerHTML = '';
     let total = 0;
     currentList.forEach((item, i) => {
         const card = document.createElement('div');
-        card.className = `item-card ${item.price > 0 ? 'has-price' : ''}`;
-        card.innerHTML = `<div>${item.name}</div>${item.price > 0 ? `<div class="item-price-tag">${item.price} TL</div>` : ''}`;
+        card.className = `card ${item.price > 0 ? 'has-price' : ''}`;
+        card.innerHTML = `<div>${item.name}</div>${item.price > 0 ? `<div class="price-tag">${item.price} TL</div>` : ''}`;
         card.onclick = () => openEdit(i);
         grid.appendChild(card);
         if(item.price > 0) total += parseFloat(item.price);
     });
-    $('total-value').innerText = total.toFixed(2);
+    document.getElementById('total-value').innerText = total.toFixed(2);
 }
 
 function openAdd() {
-    $('mContent').innerHTML = `<h3>EKLE</h3><input id="nIn" placeholder="Ürün..."><button onclick="saveNew()" style="width:100%; padding:10px; background:var(--success); border:none; color:#fff">EKLE</button>`;
-    $('gModal').style.display = 'flex';
+    document.getElementById('mContent').innerHTML = `<h3>ÜRÜN EKLE</h3><input id="nIn" placeholder="Ürün Adı..." autofocus><button onclick="saveAdd()" style="width:100%; padding:15px; background:var(--success); color:#fff;">EKLE</button>`;
+    document.getElementById('gModal').style.display = 'flex';
 }
 
-function saveNew() {
-    const val = $('nIn').value.toUpperCase();
-    if(val) { currentList.push({name: val, price: 0}); sync(); closeM(); }
+function saveAdd() {
+    const n = document.getElementById('nIn').value.trim().toUpperCase();
+    if(n) { currentList.push({name: n, price: 0}); sync(); closeM(); }
 }
 
 function openEdit(i) {
     const item = currentList[i];
-    $('mContent').innerHTML = `<h3>${item.name}</h3><input id="pIn" type="number" step="0.01" value="${item.price || ''}" placeholder="Fiyat..."><button onclick="saveEdit(${i})" style="width:100%; padding:10px; background:var(--accent); border:none; color:#fff">KAYDET</button><br><br><button onclick="deleteItem(${i})" style="width:100%; background:var(--danger); border:none; color:#fff; padding:5px">SİL</button>`;
-    $('gModal').style.display = 'flex';
+    document.getElementById('mContent').innerHTML = `<h3>${item.name}</h3><input id="pIn" type="number" step="0.01" value="${item.price || ''}" placeholder="Fiyat Gir..."><button onclick="saveEdit(${i})" style="width:100%; padding:15px; background:var(--accent); color:#fff; margin-bottom:10px;">KAYDET</button><button onclick="delItem(${i})" style="width:100%; padding:10px; background:var(--danger); color:#fff;">ÜRÜNÜ SİL</button>`;
+    document.getElementById('gModal').style.display = 'flex';
 }
 
 function saveEdit(i) {
-    currentList[i].price = $('pIn').value || 0;
+    currentList[i].price = document.getElementById('pIn').value || 0;
     sync(); closeM();
 }
 
-function deleteItem(i) {
+function delItem(i) {
     currentList.splice(i, 1);
     sync(); closeM();
 }
 
-function newList() {
+function createNewList() {
     if(currentList.length > 0) {
-        history.unshift({id: Date.now(), name: "LİSTE " + (history.length + 1), data: [...currentList]});
-    }
-    currentList = [];
-    sync();
-    $('sideMenu').classList.remove('open');
+        const hName = prompt("LİSTE ADI:", "LİSTE " + (history.length + 1));
+        if(hName) {
+            history.unshift({name: hName.toUpperCase(), data: [...currentList]});
+            currentList = [];
+            sync();
+            toggleMenu(false);
+        }
+    } else { alert("LİSTE BOŞ!"); }
 }
 
 function renderHistory() {
-    const box = $('historyBox');
-    box.innerHTML = history.map((h, i) => `<div onclick="loadHist(${i})" style="padding:10px; border-bottom:1px solid #444">${h.name} (${h.data ? h.data.length : 0} Ürün)</div>`).join('');
+    const box = document.getElementById('historyBox');
+    box.innerHTML = history.map((h, i) => `<div onclick="loadHistory(${i})" style="padding:15px; border-bottom:1px solid #444; background:rgba(255,255,255,0.05); margin-bottom:5px; border-radius:8px;">${h.name}<br><small style="color:var(--accent)">${h.data ? h.data.length : 0} Ürün</small></div>`).join('');
 }
 
-function loadHist(i) {
-    currentList = [...history[i].data];
-    sync();
-    $('sideMenu').classList.remove('open');
+function loadHistory(i) {
+    if(confirm("MEVCUT LİSTE SİLİNECEK. DEVAM?")) {
+        currentList = [...history[i].data];
+        sync();
+        toggleMenu(false);
+    }
 }
 
-function openMenu() { $('sideMenu').classList.add('open'); }
-function closeM() { $('gModal').style.display = 'none'; }
-window.onclick = (e) => { if(e.target == $('gModal')) closeM(); if(e.target == $('sideMenu')) $('sideMenu').classList.remove('open'); }
+function toggleMenu(open) { document.getElementById('sideMenu').classList.toggle('open', open); }
+function closeM() { document.getElementById('gModal').style.display = 'none'; }
+window.onclick = (e) => { if(e.target == document.getElementById('gModal')) closeM(); }
 </script>
 </body>
 </html>
