@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V6.2 - PWA & FAVS</title>
+    <title>PRO LISTE V6.2 - PWA RESTORED</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -45,7 +45,7 @@
         .modal-content { background: white; width: 92%; max-width: 450px; padding: 20px; border-radius: 15px; box-sizing: border-box; position: relative; height: 70vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
         .modal-content.small-modal { height: auto; }
         .fav-list-area { overflow-y: auto; flex-grow: 1; margin: 10px 0; border: 1px solid #f1f5f9; border-radius: 10px; background: #fafafa; }
-        .fav-row { display: flex; align-items: center; padding: 4px; border-bottom: 1px solid #f1f5f9; gap: 12px; font-weight: 800; text-transform: uppercase; color: var(--text); }
+        .fav-row { display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #f1f5f9; gap: 12px; font-weight: 800; text-transform: uppercase; color: var(--text); }
         .fav-row input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
 
         input, textarea { width: 100%; padding: 15px; margin: 8px 0; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; font-size: 16px; font-weight: bold; }
@@ -105,7 +105,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-    // PWA Service Worker Kaydı
+    // PWA Service Worker Kaydı (GERİ GETİRİLDİ)
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('data:application/javascript,self.addEventListener(\'fetch\', function(event) { event.respondWith(fetch(event.request)); });');
     }
