@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5 - FIREBASE FINAL</title>
+    <title>PRO LISTE V5 - FIREBASE FIXED</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
@@ -113,11 +113,11 @@
     let currentListId = Date.now();
     let currentListName = "YENİ LİSTE";
     let history = [];
-    let deleteMode = false;
-    let selectedForDelete = new Set();
+    let isReady = false;
     let pressTimer;
     let isLongPress = false;
-    let isReady = false;
+    let deleteMode = false;
+    let selectedForDelete = new Set();
 
     const $ = id => document.getElementById(id);
 
@@ -149,7 +149,7 @@
             card.className = `item-card ${item.price > 0 ? 'has-price' : ''}`;
             let fSize = item.name.length > 10 ? "11px" : (item.name.length > 6 ? "14px" : "16px");
             card.innerHTML = `<div class="item-text" style="font-size:${fSize}">${item.name}</div>${item.price > 0 ? `<div class="item-price-tag">${item.price} TL</div>` : ''}<div class="delete-overlay"></div>`;
-            card.onmousedown = card.ontouchstart = (e) => {
+            card.onmousedown = card.ontouchstart = () => {
                 isLongPress = false;
                 pressTimer = setTimeout(() => { isLongPress = true; if(navigator.vibrate) navigator.vibrate(50); openEditModal(i); }, 600);
             };
@@ -170,29 +170,54 @@
             const el = document.createElement('div');
             el.className = `history-item ${h.id === currentListId ? 'active-list' : ''}`;
             el.innerHTML = `<span>${h.name}</span><span style="color:var(--accent)">${h.data ? h.data.length : 0} ÜRÜN</span>`;
+            
             el.onmousedown = el.ontouchstart = (e) => {
                 isLongPress = false;
-                pressTimer = setTimeout(() => { isLongPress = true; if(navigator.vibrate) navigator.vibrate(50); closeSideMenu(); openHistAction(i); }, 2000);
+                pressTimer = setTimeout(() => { 
+                    isLongPress = true; 
+                    if(navigator.vibrate) navigator.vibrate(50); 
+                    openHistAction(i); 
+                }, 2000);
             };
             el.onmouseup = el.ontouchend = () => clearTimeout(pressTimer);
-            el.onclick = () => { if(isLongPress) return; currentListId = h.id; currentListName = h.name; currentList = [...h.data]; sync(); closeSideMenu(); };
+            el.onclick = () => { if(isLongPress) return; currentListId = h.id; currentListName = h.name; currentList = h.data || []; sync(); closeSideMenu(); };
             box.appendChild(el);
         });
     }
 
     $('mNewList').onclick = () => {
-        // Mevcut listeyi history'e ekle (eğer doluysa ve zaten orada yoksa)
-        const exists = history.find(x => x.id === currentListId);
-        if(!exists && currentList.length > 0) {
+        // Mevcut listeyi history'e işle
+        const existsIdx = history.findIndex(x => x.id === currentListId);
+        if(existsIdx > -1) {
+            history[existsIdx] = {id: currentListId, name: currentListName, data: [...currentList]};
+        } else if(currentList.length > 0) {
             history.unshift({id: currentListId, name: currentListName, data: [...currentList]});
-        } else if(exists) {
-            exists.data = [...currentList];
         }
+        
+        // Yeni listeyi oluştur
         currentListId = Date.now();
         currentListName = "LİSTE " + (history.length + 1);
         currentList = [];
-        sync(); closeSideMenu();
+        
+        // Yeni listeyi de hemen history'e ekle ki menüde görünsün
+        history.unshift({id: currentListId, name: currentListName, data: []});
+        
+        sync(); 
+        closeSideMenu();
     };
+
+    function openHistAction(i) {
+        document.body.classList.add('modal-open');
+        $('mContent').innerHTML = `<h3>LİSTE AYARI</h3><input type="text" id="hNewName" value="${history[i].name}"><div class="modal-btns"><button class="btn-ok" id="btnRenH">ADLANDIR</button><button class="btn-cancel" style="background:var(--danger)" id="btnOpenDelH">SİL</button></div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseH">KAPAT</button>`;
+        $('gModal').style.display = 'flex';
+        $('btnRenH').onclick = () => { history[i].name = $('hNewName').value.toUpperCase(); if(history[i].id === currentListId) currentListName = history[i].name; sync(); closeGModal(); };
+        $('btnCloseH').onclick = closeGModal;
+        $('btnOpenDelH').onclick = () => {
+            $('mContent').innerHTML = `<h3>SİLİNSİN Mİ?</h3><p style="text-align:center;">"${history[i].name}" SİLİNECEK.</p><div class="modal-btns"><button class="btn-ok" style="background:var(--danger)" id="btnConfirmDelH">SİL</button><button class="btn-cancel" id="btnAbortH">İPTAL</button></div>`;
+            $('btnConfirmDelH').onclick = () => { const deletedId = history[i].id; history.splice(i, 1); if(deletedId === currentListId) { currentList = []; currentListId = Date.now(); currentListName = "YENİ LİSTE"; } sync(); closeGModal(); };
+            $('btnAbortH').onclick = closeGModal;
+        };
+    }
 
     function openAddModal() {
         document.body.classList.add('modal-open');
@@ -211,24 +236,11 @@
         $('btnCloseE').onclick = closeGModal;
     }
 
-    function openHistAction(i) {
-        document.body.classList.add('modal-open');
-        $('mContent').innerHTML = `<h3>LİSTE AYARI</h3><input type="text" id="hNewName" value="${history[i].name}"><div class="modal-btns"><button class="btn-ok" id="btnRenH">ADLANDIR</button><button class="btn-cancel" style="background:var(--danger)" id="btnOpenDelH">SİL</button></div><button class="btn-cancel" style="width:100%; margin-top:10px;" id="btnCloseH">KAPAT</button>`;
-        $('gModal').style.display = 'flex';
-        $('btnRenH').onclick = () => { history[i].name = $('hNewName').value.toUpperCase(); sync(); closeGModal(); };
-        $('btnCloseH').onclick = closeGModal;
-        $('btnOpenDelH').onclick = () => {
-            $('mContent').innerHTML = `<h3>SİLİNSİN Mİ?</h3><p style="text-align:center;">"${history[i].name}" SİLİNECEK.</p><div class="modal-btns"><button class="btn-ok" style="background:var(--danger)" id="btnConfirmDelH">SİL</button><button class="btn-cancel" id="btnAbortH">İPTAL</button></div>`;
-            $('btnConfirmDelH').onclick = () => { const deletedId = history[i].id; history.splice(i, 1); if(deletedId === currentListId) { currentList = []; currentListId = Date.now(); currentListName = "YENİ LİSTE"; } sync(); closeGModal(); };
-            $('btnAbortH').onclick = closeGModal;
-        };
-    }
-
     function closeGModal() { $('gModal').style.display='none'; document.body.classList.remove('modal-open'); }
     $('menuBtn').onclick = () => { $('sideMenu').classList.add('open'); document.body.classList.add('modal-open'); };
     function closeSideMenu() { $('sideMenu').classList.remove('open'); document.body.classList.remove('modal-open'); }
     $('addQuick').onclick = openAddModal;
-    $('mBulkList').onclick = openBulkModal;
+    $('mBulkList').onclick = () => openBulkModal();
     $('delQuick').onclick = () => { deleteMode = true; selectedForDelete.clear(); $('deleteControls').style.display = 'flex'; $('mainWrapper').style.opacity = "0.5"; };
     $('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(); };
     $('confirmDel').onclick = () => { currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; sync(); };
