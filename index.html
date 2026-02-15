@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V6.1 - STABLE FAVS</title>
+    <title>PRO LISTE V6.2 - PWA & FAVS</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="manifest" href="data:application/manifest+json,{'name':'Market Listem','short_name':'Market','start_url':'.','display':'standalone','background_color':'#ffffff','theme_color':'#3b82f6','icons':[{'src':'https://cdn-icons-png.flaticon.com/512/3081/3081840.png','sizes':'512x512','type':'image/png'}]}">
+    
     <style>
         :root { --bg: #ffffff; --card: #f8fafc; --accent: #3b82f6; --success: #22c55e; --danger: #ef4444; --text: #1e293b; --shadow: 0 2px 4px rgba(0,0,0,0.1); }
         body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; touch-action: pan-x pan-y; }
@@ -99,6 +105,11 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
+    // PWA Service Worker Kaydı
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('data:application/javascript,self.addEventListener(\'fetch\', function(event) { event.respondWith(fetch(event.request)); });');
+    }
+
     const firebaseConfig = {
         apiKey: "AIzaSyA9whlWMrlyF6GMnWBK7SQA76qNFpO7RkQ",
         authDomain: "market-listesi-d9338.firebaseapp.com",
@@ -210,7 +221,6 @@
         });
 
         $('addFavItem').onclick = openAddFavModal;
-
         $('toggleFavDel').onclick = () => { favDeleteMode = !favDeleteMode; renderFavModal(); };
 
         $('addSelectedToMain').onclick = () => {
