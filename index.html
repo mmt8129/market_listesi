@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5 - DYNAMIC WHITE</title>
+    <title>PRO LISTE V5 - ENTER SUPPORT</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
@@ -21,8 +21,8 @@
         .btn-minus { background: #64748b; }
         .btn-bulk { background: var(--accent); font-size: 18px; }
 
-        .container { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
-        .item-card { background: var(--bg); border-radius: 12px; width: 95%; max-width: 500px; min-height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; border: 1px solid #e2e8f0; box-shadow: var(--shadow); }
+        .container { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; align-items: center; transition: padding-bottom 0.3s ease; }
+        .item-card { background: var(--bg); border-radius: 12px; width: 95%; max-width: 500px; min-height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; border: 1px solid #e2e8f0; box-shadow: var(--shadow); flex-shrink: 0; }
         .item-card.has-price { background: var(--danger); border-color: var(--danger); }
         .item-card.has-price .item-text, .item-card.has-price .item-price-tag { color: white; }
         .item-text { font-size: 18px; font-weight: 800; text-transform: uppercase; color: var(--text); flex: 1; text-align: left; }
@@ -47,7 +47,7 @@
         .btn-cancel { background: #e2e8f0; color: #64748b; }
         .btn-danger-action { background: var(--danger); color: white; }
 
-        .floating-confirm { position: fixed; bottom: 100px; left: 0; width: 100%; display: none; justify-content: center; gap: 20px; z-index: 1500; }
+        .floating-confirm { position: fixed; bottom: 30px; left: 0; width: 100%; display: none; justify-content: center; gap: 20px; z-index: 1500; }
         #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; justify-content:center; align-items:center; color:var(--accent); font-size: 24px; font-weight:900; }
     </style>
 </head>
@@ -168,7 +168,6 @@
         $('total-value-display').innerText = total.toFixed(2) + ' TL';
         $('total-items-count').innerText = currentList.length;
         
-        // Modal açıksa ve bütçe ekranıysa canlı güncelle
         const budgetRes = $('resultCalc');
         if(budgetRes) {
             const kalan = userBudget - total;
@@ -189,7 +188,10 @@
         document.body.classList.add('modal-open');
         $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" id="btnCloseM">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
-        $('btnSaveAdd').onclick = () => { const n = $('inName').value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); sync(); } closeGModal(); };
+        
+        const save = () => { const n = $('inName').value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); sync(); } closeGModal(); };
+        $('btnSaveAdd').onclick = save;
+        $('inName').onkeydown = (e) => { if(e.key === 'Enter') save(); };
         $('btnCloseM').onclick = closeGModal;
     }
 
@@ -198,7 +200,10 @@
         const item = currentList[i];
         $('mContent').innerHTML = `<h3>DÜZENLE</h3><input type="text" id="edName" value="${item.name}"><input type="number" id="edPrice" placeholder="FİYAT GİR (TL)" value="${item.price || ''}"><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">KAYDET</button><button class="btn-cancel" id="btnCloseE">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
-        $('btnSaveEdit').onclick = () => { currentList[i].name = $('edName').value.trim().toUpperCase(); currentList[i].price = $('edPrice').value || 0; sync(); closeGModal(); };
+        
+        const save = () => { currentList[i].name = $('edName').value.trim().toUpperCase(); currentList[i].price = $('edPrice').value || 0; sync(); closeGModal(); };
+        $('btnSaveEdit').onclick = save;
+        $('edPrice').onkeydown = (e) => { if(e.key === 'Enter') save(); };
         $('btnCloseE').onclick = closeGModal;
     }
 
@@ -215,14 +220,13 @@
             $('resultCalc').style.color = kalan < 0 ? 'var(--danger)' : '#22c55e';
         };
 
+        const saveBudget = () => { userBudget = parseFloat($('budgetInput').value) || 0; sync(); closeGModal(); };
+
         $('budgetInput').oninput = updateCalc;
+        $('budgetInput').onkeydown = (e) => { if(e.key === 'Enter') saveBudget(); };
         updateCalc();
 
-        $('btnSaveBudget').onclick = () => {
-            userBudget = parseFloat($('budgetInput').value) || 0;
-            sync();
-            closeGModal();
-        };
+        $('btnSaveBudget').onclick = saveBudget;
         $('btnCloseCalc').onclick = closeGModal;
     };
 
@@ -239,9 +243,30 @@
         $('btnCloseB').onclick = closeGModal;
     };
 
-    $('delQuick').onclick = () => { deleteMode = true; selectedForDelete.clear(); $('deleteControls').style.display = 'flex'; $('mainWrapper').style.opacity = "0.5"; };
-    $('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; render(); };
-    $('confirmDel').onclick = () => { currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; sync(); };
+    $('delQuick').onclick = () => { 
+        deleteMode = true; 
+        selectedForDelete.clear(); 
+        $('deleteControls').style.display = 'flex'; 
+        $('mainWrapper').style.opacity = "0.5"; 
+        $('mainGrid').style.paddingBottom = "120px"; 
+    };
+
+    $('cancelDel').onclick = () => { 
+        deleteMode = false; 
+        $('deleteControls').style.display = 'none'; 
+        $('mainWrapper').style.opacity = "1"; 
+        $('mainGrid').style.paddingBottom = "10px";
+        render(); 
+    };
+
+    $('confirmDel').onclick = () => { 
+        currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); 
+        deleteMode = false; 
+        $('deleteControls').style.display = 'none'; 
+        $('mainWrapper').style.opacity = "1"; 
+        $('mainGrid').style.paddingBottom = "10px";
+        sync(); 
+    };
     
     function closeGModal() { $('gModal').style.display='none'; document.body.classList.remove('modal-open'); }
     $('addQuick').onclick = openAddModal;
