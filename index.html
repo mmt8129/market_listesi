@@ -1,54 +1,56 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V5 - ENTER SUPPORT</title>
+    <title>PRO LISTE V6.1 - STABLE FAVS</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
-        :root { --bg: #ffffff; --card: #f8fafc; --accent: #3b82f6; --success: #ffffff; --danger: #ef4444; --text: #1e293b; --shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        :root { --bg: #ffffff; --card: #f8fafc; --accent: #3b82f6; --success: #22c55e; --danger: #ef4444; --text: #1e293b; --shadow: 0 2px 4px rgba(0,0,0,0.1); }
         body { margin: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f1f5f9; color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; touch-action: pan-x pan-y; }
         .blur-target { transition: filter 0.3s ease; display: flex; flex-direction: column; height: 100vh; }
         body.modal-open .blur-target { filter: blur(8px); pointer-events: none; }
         
-        .top-fixed-bar { background: var(--bg); padding: 15px; border-bottom: 2px solid #e2e8f0; z-index: 100; box-shadow: var(--shadow); }
+        .top-fixed-bar { background: var(--bg); padding: 10px 15px; border-bottom: 2px solid #e2e8f0; z-index: 100; box-shadow: var(--shadow); }
         .header-row { display: flex; justify-content: space-between; align-items: center; }
-        .menu-icon { font-size: 30px; cursor: pointer; color: var(--text); padding: 5px; }
-        .header-title { font-size: 20px; font-weight: 900; color: var(--text); text-transform: uppercase; letter-spacing: 1px; }
-        .action-btns { display: flex; gap: 8px; }
+        .left-btns, .right-btns { display: flex; gap: 10px; align-items: center; }
         
-        .circle-btn { width: 45px; height: 45px; border-radius: 12px; border: none; font-size: 24px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-plus { background: #22c55e; }
-        .btn-minus { background: #64748b; }
-        .btn-bulk { background: var(--accent); font-size: 18px; }
+        .circle-btn { width: 42px; height: 42px; border-radius: 10px; border: none; font-size: 20px; font-weight: bold; color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 5px rgba(0,0,0,0.1); }
+        .btn-star { background: #f59e0b; color: white; font-size: 24px; }
+        .btn-trash { background: #64748b; font-size: 22px; }
+        .btn-plus { background: var(--success); }
+        .btn-minus { background: #94a3b8; }
+        .btn-bulk { background: var(--accent); font-size: 14px; }
 
         .container { flex-grow: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; align-items: center; transition: padding-bottom 0.3s ease; }
-        .item-card { background: var(--bg); border-radius: 12px; width: 95%; max-width: 500px; min-height: 60px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-sizing: border-box; border: 1px solid #e2e8f0; box-shadow: var(--shadow); flex-shrink: 0; }
+        .item-card { background: var(--bg); border-radius: 12px; width: 95%; max-width: 500px; min-height: 55px; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; box-sizing: border-box; border: 1px solid #e2e8f0; box-shadow: var(--shadow); flex-shrink: 0; }
         .item-card.has-price { background: var(--danger); border-color: var(--danger); }
         .item-card.has-price .item-text, .item-card.has-price .item-price-tag { color: white; }
-        .item-text { font-size: 18px; font-weight: 800; text-transform: uppercase; color: var(--text); flex: 1; text-align: left; }
+        .item-text { font-size: 17px; font-weight: 800; text-transform: uppercase; color: var(--text); flex: 1; text-align: left; }
         .item-price-tag { font-size: 16px; font-weight: 900; color: var(--accent); margin-left: 10px; }
         
         .item-card.selected { border: 4px solid var(--danger); position: relative; }
-        .item-card.selected::after { content: '✕'; position: absolute; right: 10px; color: var(--danger); font-size: 30px; font-weight: 900; }
+        .item-card.selected::after { content: '✕'; position: absolute; right: 10px; color: var(--danger); font-size: 25px; font-weight: 900; }
 
-        .bottom-banner { background: var(--bg); border-top: 3px solid var(--accent); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
-        .total-box { cursor: pointer; }
-        #total-value-display { font-size: 28px; font-weight: 900; color: var(--text); }
-        .stats-mini { font-size: 14px; font-weight: 800; color: #64748b; text-align: right; }
+        .bottom-banner { background: var(--bg); border-top: 3px solid var(--accent); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
+        #total-value-display { font-size: 26px; font-weight: 900; color: var(--text); }
+        .stats-mini { font-size: 13px; font-weight: 800; color: #64748b; text-align: right; }
 
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 2000; }
-        .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; box-sizing: border-box; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
-        .modal-content h3 { margin: 0 0 20px 0; color: var(--text); font-size: 22px; text-align: center; font-weight: 900; }
-        input, textarea { width: 100%; padding: 15px; margin: 10px 0; background: #f8fafc; border: 2px solid #e2e8f0; color: var(--text); border-radius: 12px; box-sizing: border-box; font-size: 18px; font-weight: bold; }
+        .modal-content { background: white; width: 92%; max-width: 450px; padding: 20px; border-radius: 15px; box-sizing: border-box; position: relative; height: 70vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+        .modal-content.small-modal { height: auto; }
+        .fav-list-area { overflow-y: auto; flex-grow: 1; margin: 10px 0; border: 1px solid #f1f5f9; border-radius: 10px; background: #fafafa; }
+        .fav-row { display: flex; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; gap: 12px; font-weight: 800; text-transform: uppercase; color: var(--text); }
+        .fav-row input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
+
+        input, textarea { width: 100%; padding: 15px; margin: 8px 0; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; font-size: 16px; font-weight: bold; }
         input:focus { border-color: var(--accent); outline: none; }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .modal-btns button { flex: 1; padding: 15px; border-radius: 12px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; }
+        .modal-btns { display: flex; gap: 8px; margin-top: auto; padding-top: 10px; }
+        .modal-btns button { flex: 1; padding: 15px; border-radius: 12px; border: none; font-weight: 900; cursor: pointer; font-size: 15px; }
         .btn-ok { background: var(--accent); color: white; }
         .btn-cancel { background: #e2e8f0; color: #64748b; }
-        .btn-danger-action { background: var(--danger); color: white; }
 
         .floating-confirm { position: fixed; bottom: 30px; left: 0; width: 100%; display: none; justify-content: center; gap: 20px; z-index: 1500; }
-        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; justify-content:center; align-items:center; color:var(--accent); font-size: 24px; font-weight:900; }
+        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:9999; display:flex; justify-content:center; align-items:center; color:var(--accent); font-size: 22px; font-weight:900; }
     </style>
 </head>
 <body>
@@ -58,9 +60,11 @@
 <div class="blur-target" id="mainWrapper">
     <div class="top-fixed-bar">
         <div class="header-row">
-            <div class="menu-icon" id="clearListBtn">🗑️</div>
-            <div class="header-title">MARKET LİSTEM</div>
-            <div class="action-btns">
+            <div class="left-btns">
+                <div class="circle-btn btn-trash" id="clearListBtn">🗑️</div>
+                <div class="circle-btn btn-star" id="openFavs">⭐</div>
+            </div>
+            <div class="right-btns">
                 <button class="circle-btn btn-bulk" id="mBulkList">+++</button>
                 <button class="circle-btn btn-plus" id="addQuick">+</button>
                 <button class="circle-btn btn-minus" id="delQuick">-</button>
@@ -71,20 +75,20 @@
     <div class="container" id="mainGrid"></div>
 
     <div class="bottom-banner">
-        <div class="total-box" id="openBudget">
-            <div style="font-size: 12px; font-weight: 800; color: #64748b;">TOPLAM TUTAR</div>
+        <div class="total-box" onclick="openBudgetModal()">
+            <div style="font-size: 11px; font-weight: 800; color: #64748b;">TOPLAM TUTAR</div>
             <div id="total-value-display">0.00 TL</div>
         </div>
         <div class="stats-mini">
-            <div style="font-size: 11px;">ÜRÜN SAYISI</div>
-            <div style="font-size: 18px; color: var(--text);">TOPLAM: <span id="total-items-count">0</span></div>
+            <div>TOPLAM ÜRÜN</div>
+            <div style="font-size: 18px; color: var(--text);" id="total-items-count">0</div>
         </div>
     </div>
 </div>
 
 <div class="floating-confirm" id="deleteControls">
-    <button class="circle-btn" id="confirmDel" style="background:#22c55e; width:70px; height:70px;">✓</button>
-    <button class="circle-btn" id="cancelDel" style="background:var(--danger); width:70px; height:70px;">✕</button>
+    <button class="circle-btn" id="confirmDel" style="background:var(--success); width:65px; height:65px;">✓</button>
+    <button class="circle-btn" id="cancelDel" style="background:var(--danger); width:65px; height:65px;">✕</button>
 </div>
 
 <div id="gModal" class="modal">
@@ -109,167 +113,139 @@
     const db = firebase.database();
 
     let currentList = [];
+    let favList = [];
+    let userBudget = 0;
     let isReady = false;
-    let pressTimer;
-    let isLongPress = false;
     let deleteMode = false;
     let selectedForDelete = new Set();
-    let userBudget = 0;
+    let favDeleteMode = false;
 
     const $ = id => document.getElementById(id);
 
     db.ref('v5_app_state/current').on('value', snap => {
         const cloud = snap.val();
-        if(cloud) {
-            currentList = cloud.data || [];
-            userBudget = cloud.budget || 0;
-        }
-        isReady = true;
-        $('loading-screen').style.display = 'none';
-        render();
+        if(cloud) { currentList = cloud.data || []; userBudget = cloud.budget || 0; }
+        isReady = true; $('loading-screen').style.display = 'none'; render();
     });
 
-    function sync() {
-        if(!isReady) return;
-        db.ref('v5_app_state/current').set({id: Date.now(), name: "LİSTE", data: currentList, budget: userBudget});
-    }
+    db.ref('v5_app_state/favorites').on('value', snap => { favList = snap.val() || []; });
+
+    function sync() { if(!isReady) return; db.ref('v5_app_state/current').set({id: Date.now(), data: currentList, budget: userBudget}); }
+    function syncFavs() { db.ref('v5_app_state/favorites').set(favList); }
 
     function render() {
-        const grid = $('mainGrid'); grid.innerHTML = '';
-        let total = 0;
-        
+        const grid = $('mainGrid'); grid.innerHTML = ''; let total = 0;
         currentList.forEach((item, i) => {
             const card = document.createElement('div');
-            card.className = `item-card ${item.price > 0 ? 'has-price' : ''}`;
-            card.innerHTML = `
-                <div class="item-text">${item.name}</div>
-                <div class="item-price-tag">${item.price > 0 ? item.price + ' TL' : ''}</div>
-            `;
-            
-            card.onmousedown = card.ontouchstart = () => {
-                isLongPress = false;
-                pressTimer = setTimeout(() => { isLongPress = true; if(navigator.vibrate) navigator.vibrate(50); openEditModal(i); }, 600);
-            };
-            card.onmouseup = card.ontouchend = () => clearTimeout(pressTimer);
-            
-            card.onclick = () => { 
-                if(isLongPress) return; 
-                if(deleteMode) { 
-                    if(selectedForDelete.has(i)) { selectedForDelete.delete(i); card.classList.remove('selected'); } 
-                    else { selectedForDelete.add(i); card.classList.add('selected'); } 
-                } else { 
-                    openEditModal(i); 
-                } 
-            };
-            grid.appendChild(card);
-            if(item.price > 0) { total += parseFloat(item.price); }
+            card.className = `item-card ${item.price > 0 ? 'has-price' : ''} ${deleteMode && selectedForDelete.has(i) ? 'selected' : ''}`;
+            card.innerHTML = `<div class="item-text">${item.name}</div><div class="item-price-tag">${item.price > 0 ? item.price + ' TL' : ''}</div>`;
+            card.onclick = () => { if(deleteMode) { if(selectedForDelete.has(i)) selectedForDelete.delete(i); else selectedForDelete.add(i); render(); } else openEditModal(i); };
+            grid.appendChild(card); if(item.price > 0) total += parseFloat(item.price);
         });
-
         $('total-value-display').innerText = total.toFixed(2) + ' TL';
         $('total-items-count').innerText = currentList.length;
-        
-        const budgetRes = $('resultCalc');
-        if(budgetRes) {
-            const kalan = userBudget - total;
-            budgetRes.innerText = `KALAN: ${kalan.toFixed(2)} TL`;
-            budgetRes.style.color = kalan < 0 ? 'var(--danger)' : '#22c55e';
-        }
     }
 
-    $('clearListBtn').onclick = () => {
-        document.body.classList.add('modal-open');
-        $('mContent').innerHTML = `<h3>LİSTEYİ TEMİZLE?</h3><p style="text-align:center; font-weight:bold;">TÜM ÜRÜNLER SİLİNECEK.</p><div class="modal-btns"><button class="btn-danger-action" id="confirmClear">EVET, SİL</button><button class="btn-cancel" id="cancelClear">İPTAL</button></div>`;
-        $('gModal').style.display = 'flex';
-        $('confirmClear').onclick = () => { currentList = []; sync(); closeGModal(); };
-        $('cancelClear').onclick = closeGModal;
-    };
+    function closeGModal() { $('gModal').style.display='none'; document.body.classList.remove('modal-open'); }
 
-    function openAddModal() {
+    $('addQuick').onclick = () => {
         document.body.classList.add('modal-open');
-        $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" id="btnCloseM">İPTAL</button></div>`;
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
-        
         const save = () => { const n = $('inName').value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); sync(); } closeGModal(); };
         $('btnSaveAdd').onclick = save;
-        $('inName').onkeydown = (e) => { if(e.key === 'Enter') save(); };
-        $('btnCloseM').onclick = closeGModal;
-    }
+        $('inName').onkeydown = e => { if(e.key === 'Enter') save(); };
+    };
 
     function openEditModal(i) {
         document.body.classList.add('modal-open');
         const item = currentList[i];
-        $('mContent').innerHTML = `<h3>DÜZENLE</h3><input type="text" id="edName" value="${item.name}"><input type="number" id="edPrice" placeholder="FİYAT GİR (TL)" value="${item.price || ''}"><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">KAYDET</button><button class="btn-cancel" id="btnCloseE">İPTAL</button></div>`;
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>DÜZENLE</h3><input type="text" id="edName" value="${item.name}"><input type="number" id="edPrice" placeholder="FİYAT (TL)" value="${item.price || ''}" autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
-        
         const save = () => { currentList[i].name = $('edName').value.trim().toUpperCase(); currentList[i].price = $('edPrice').value || 0; sync(); closeGModal(); };
         $('btnSaveEdit').onclick = save;
-        $('edPrice').onkeydown = (e) => { if(e.key === 'Enter') save(); };
-        $('btnCloseE').onclick = closeGModal;
+        $('edPrice').onkeydown = e => { if(e.key === 'Enter') save(); };
     }
 
-    $('openBudget').onclick = () => {
-        const currentTotal = parseFloat($('total-value-display').innerText);
+    function openBudgetModal() {
         document.body.classList.add('modal-open');
-        $('mContent').innerHTML = `<h3>BAKİYE HESABI</h3><input type="number" id="budgetInput" placeholder="CEBİNDEKİ PARA" value="${userBudget || ''}"><div id="resultCalc" style="text-align:center; font-weight:900; font-size:22px; margin:15px 0;"></div><div class="modal-btns"><button class="btn-ok" id="btnSaveBudget">BÜTÇEYİ KAYDET</button><button class="btn-cancel" id="btnCloseCalc">KAPAT</button></div>`;
+        const currentTotal = parseFloat($('total-value-display').innerText);
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>BAKİYE HESABI</h3><input type="number" id="budgetInput" placeholder="CEBİNDEKİ PARA" value="${userBudget || ''}"><div id="resultCalc" style="text-align:center; font-weight:900; font-size:22px; margin:10px 0;"></div><div class="modal-btns"><button class="btn-ok" id="btnSaveBudget">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">KAPAT</button></div>`;
         $('gModal').style.display = 'flex';
+        const update = () => { const b = parseFloat($('budgetInput').value) || 0; const k = b - currentTotal; $('resultCalc').innerText = `KALAN: ${k.toFixed(2)} TL`; $('resultCalc').style.color = k < 0 ? 'var(--danger)' : 'var(--success)'; };
+        $('budgetInput').oninput = update;
+        $('budgetInput').onkeydown = e => { if(e.key === 'Enter') { userBudget = parseFloat($('budgetInput').value) || 0; sync(); closeGModal(); } };
+        update();
+        $('btnSaveBudget').onclick = () => { userBudget = parseFloat($('budgetInput').value) || 0; sync(); closeGModal(); };
+    }
+
+    $('openFavs').onclick = () => { favDeleteMode = false; renderFavModal(); };
+
+    function renderFavModal() {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content";
+        $('mContent').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0">FAVORİLER</h3>
+                <div style="display:flex; gap:8px;">
+                    <button class="circle-btn btn-plus" id="addFavItem" style="width:40px; height:40px;">+</button>
+                    <button class="circle-btn btn-minus" id="toggleFavDel" style="width:40px; height:40px; background:${favDeleteMode?'red':'#94a3b8'}">-</button>
+                </div>
+            </div>
+            <div class="fav-list-area" id="favListItems"></div>
+            <div class="modal-btns">
+                <button class="btn-ok" id="addSelectedToMain">${favDeleteMode ? 'SEÇİLENLERİ SİL' : 'ANA LİSTEYE EKLE'}</button>
+                <button class="btn-cancel" onclick="closeGModal()">KAPAT</button>
+            </div>`;
         
-        const updateCalc = () => {
-            const tempBudget = parseFloat($('budgetInput').value) || 0;
-            const kalan = tempBudget - currentTotal;
-            $('resultCalc').innerText = `KALAN: ${kalan.toFixed(2)} TL`;
-            $('resultCalc').style.color = kalan < 0 ? 'var(--danger)' : '#22c55e';
+        const listArea = $('favListItems');
+        favList.forEach((fav, idx) => {
+            const div = document.createElement('div'); div.className = 'fav-row';
+            div.innerHTML = `<input type="checkbox" id="fav_${idx}"> <label for="fav_${idx}" style="flex:1;">${fav}</label>`;
+            div.onclick = (e) => { if(e.target.tagName !== 'INPUT') $(`fav_${idx}`).checked = !$(`fav_${idx}`).checked; };
+            listArea.appendChild(div);
+        });
+
+        $('addFavItem').onclick = openAddFavModal;
+
+        $('toggleFavDel').onclick = () => { favDeleteMode = !favDeleteMode; renderFavModal(); };
+
+        $('addSelectedToMain').onclick = () => {
+            const selected = []; favList.forEach((_, idx) => { if($(`fav_${idx}`).checked) selected.push(idx); });
+            if(favDeleteMode) { favList = favList.filter((_, idx) => !selected.includes(idx)); syncFavs(); renderFavModal(); } 
+            else { selected.forEach(idx => currentList.push({name: favList[idx], price: 0})); sync(); closeGModal(); }
         };
+        $('gModal').style.display = 'flex';
+    }
 
-        const saveBudget = () => { userBudget = parseFloat($('budgetInput').value) || 0; sync(); closeGModal(); };
+    function openAddFavModal() {
+        const tempContent = $('mContent').innerHTML;
+        const tempClass = $('mContent').className;
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>FAVORİ EKLE</h3><input type="text" id="newFavName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnConfirmFav">EKLE</button><button class="btn-cancel" id="btnCancelFav">İPTAL</button></div>`;
+        const confirm = () => { const n = $('newFavName').value.trim().toUpperCase(); if(n) { favList.push(n); syncFavs(); } $('mContent').className = tempClass; renderFavModal(); };
+        $('btnConfirmFav').onclick = confirm;
+        $('newFavName').onkeydown = e => { if(e.key === 'Enter') confirm(); };
+        $('btnCancelFav').onclick = () => { $('mContent').className = tempClass; renderFavModal(); };
+    }
 
-        $('budgetInput').oninput = updateCalc;
-        $('budgetInput').onkeydown = (e) => { if(e.key === 'Enter') saveBudget(); };
-        updateCalc();
-
-        $('btnSaveBudget').onclick = saveBudget;
-        $('btnCloseCalc').onclick = closeGModal;
-    };
+    $('clearListBtn').onclick = () => { if(confirm("LİSTE TEMİZLENSİN Mİ?")) { currentList = []; sync(); } };
 
     $('mBulkList').onclick = () => {
         document.body.classList.add('modal-open');
-        const currentNames = currentList.map(x => x.name).join('\n');
-        $('mContent').innerHTML = `<h3>TOPLU LİSTE</h3><textarea id="bulkData" rows="10" placeholder="HER SATIRA BİR ÜRÜN...">${currentNames}</textarea><div class="modal-btns"><button class="btn-ok" id="btnSaveBulk">GÜNCELLE</button><button class="btn-cancel" id="btnCloseB">İPTAL</button></div>`;
+        $('mContent').className = "modal-content";
+        const names = currentList.map(x => x.name).join('\n');
+        $('mContent').innerHTML = `<h3>TOPLU LİSTE</h3><textarea id="bulkData" rows="12">${names}</textarea><div class="modal-btns"><button class="btn-ok" id="saveBulk">GÜNCELLE</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
-        $('btnSaveBulk').onclick = () => {
-            const lines = $('bulkData').value.split('\n'); let newList = [];
-            lines.forEach(line => { const n = line.trim().toUpperCase(); if(n) { const ex = currentList.find(x => x.name === n); newList.push(ex ? ex : {name: n, price: 0}); } });
-            currentList = newList; sync(); closeGModal();
-        };
-        $('btnCloseB').onclick = closeGModal;
+        $('saveBulk').onclick = () => { const lines = $('bulkData').value.split('\n'); currentList = lines.map(l => l.trim().toUpperCase()).filter(l => l).map(l => ({name: l, price: 0})); sync(); closeGModal(); };
     };
 
-    $('delQuick').onclick = () => { 
-        deleteMode = true; 
-        selectedForDelete.clear(); 
-        $('deleteControls').style.display = 'flex'; 
-        $('mainWrapper').style.opacity = "0.5"; 
-        $('mainGrid').style.paddingBottom = "120px"; 
-    };
-
-    $('cancelDel').onclick = () => { 
-        deleteMode = false; 
-        $('deleteControls').style.display = 'none'; 
-        $('mainWrapper').style.opacity = "1"; 
-        $('mainGrid').style.paddingBottom = "10px";
-        render(); 
-    };
-
-    $('confirmDel').onclick = () => { 
-        currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); 
-        deleteMode = false; 
-        $('deleteControls').style.display = 'none'; 
-        $('mainWrapper').style.opacity = "1"; 
-        $('mainGrid').style.paddingBottom = "10px";
-        sync(); 
-    };
-    
-    function closeGModal() { $('gModal').style.display='none'; document.body.classList.remove('modal-open'); }
-    $('addQuick').onclick = openAddModal;
+    $('delQuick').onclick = () => { deleteMode = true; selectedForDelete.clear(); $('deleteControls').style.display = 'flex'; $('mainWrapper').style.opacity = "0.5"; $('mainGrid').style.paddingBottom = "120px"; render(); };
+    $('cancelDel').onclick = () => { deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; $('mainGrid').style.paddingBottom = "10px"; render(); };
+    $('confirmDel').onclick = () => { currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); deleteMode = false; $('deleteControls').style.display = 'none'; $('mainWrapper').style.opacity = "1"; $('mainGrid').style.paddingBottom = "10px"; sync(); };
 </script>
 </body>
 </html>
