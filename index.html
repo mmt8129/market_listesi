@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V6.5 - DUPLICATE PREVENT</title>
+    <title>PRO LISTE V6.6 - MODAL UI</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -36,8 +36,9 @@
         .item-text { font-size: 17px; font-weight: 800; text-transform: uppercase; color: var(--text); flex: 1; text-align: left; }
         .item-price-tag { font-size: 16px; font-weight: 900; color: var(--accent); margin-left: 10px; }
         
-        .item-card.selected { border: 4px solid var(--danger); position: relative; }
-        .item-card.selected::after { content: '✕'; position: absolute; right: 10px; color: var(--danger); font-size: 25px; font-weight: 900; }
+        /* SEÇİLEN ÜRÜN RENGİ MAVİ OLDU */
+        .item-card.selected { border: 4px solid var(--accent) !important; position: relative; }
+        .item-card.selected::after { content: '✕'; position: absolute; right: 10px; color: var(--accent); font-size: 25px; font-weight: 900; }
 
         .bottom-banner { background: var(--bg); border-top: 3px solid var(--accent); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
         #total-value-display { font-size: 26px; font-weight: 900; color: var(--text); }
@@ -253,7 +254,14 @@
         $('btnCancelFav').onclick = () => { $('mContent').className = tempClass; renderFavModal(); };
     }
 
-    $('clearListBtn').onclick = () => { if(confirm("LİSTE TEMİZLENSİN Mİ?")) { currentList = []; sync(); } };
+    /* ÇÖP KUTUSU ÖZEL ONAY MODALI */
+    $('clearListBtn').onclick = () => {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>LİSTE TEMİZLENSİN Mİ?</h3><p style="text-align:center; font-weight:800; color:var(--danger);">TÜM ÜRÜNLER SİLİNECEK!</p><div class="modal-btns"><button class="btn-ok" id="confirmClear" style="background:var(--danger);">SİL</button><button class="btn-cancel" onclick="closeGModal()">VAZGEÇ</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('confirmClear').onclick = () => { currentList = []; sync(); closeGModal(); };
+    };
 
     $('mBulkList').onclick = () => {
         document.body.classList.add('modal-open');
