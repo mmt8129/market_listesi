@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V6.4 - PWA SYNC</title>
+    <title>PRO LISTE V6.5 - DUPLICATE PREVENT</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -47,7 +47,7 @@
         .modal-content { background: white; width: 92%; max-width: 450px; padding: 20px; border-radius: 15px; box-sizing: border-box; position: relative; height: 70vh; display: flex; flex-direction: column; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
         .modal-content.small-modal { height: auto; }
         .fav-list-area { overflow-y: auto; flex-grow: 1; margin: 10px 0; border: 1px solid #f1f5f9; border-radius: 10px; background: #fafafa; }
-        .fav-row { display: flex; align-items: center; padding: 4px; border-bottom: 1px solid #f1f5f9; gap: 12px; font-weight: 800; text-transform: uppercase; color: var(--text); }
+        .fav-row { display: flex; align-items: center; padding: 2px; border-bottom: 1px solid #f1f5f9; gap: 12px; font-weight: 800; text-transform: uppercase; color: var(--text); }
         .fav-row input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
 
         input, textarea { width: 100%; padding: 15px; margin: 8px 0; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; font-size: 16px; font-weight: bold; }
@@ -107,7 +107,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-    // SENİN DOSYANDAKİ SERVICE WORKER KAYDI
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
@@ -229,9 +228,16 @@
         $('toggleFavDel').onclick = () => { favDeleteMode = !favDeleteMode; renderFavModal(); };
 
         $('addSelectedToMain').onclick = () => {
-            const selected = []; favList.forEach((_, idx) => { if($(`fav_${idx}`).checked) selected.push(idx); });
-            if(favDeleteMode) { favList = favList.filter((_, idx) => !selected.includes(idx)); syncFavs(); renderFavModal(); } 
-            else { selected.forEach(idx => currentList.push({name: favList[idx], price: 0})); sync(); closeGModal(); }
+            const selectedIdx = []; favList.forEach((_, idx) => { if($(`fav_${idx}`).checked) selectedIdx.push(idx); });
+            if(favDeleteMode) { favList = favList.filter((_, idx) => !selectedIdx.includes(idx)); syncFavs(); renderFavModal(); } 
+            else { 
+                selectedIdx.forEach(idx => {
+                    const itemName = favList[idx];
+                    const alreadyExists = currentList.some(item => item.name === itemName);
+                    if(!alreadyExists) { currentList.push({name: itemName, price: 0}); }
+                });
+                sync(); closeGModal(); 
+            }
         };
         $('gModal').style.display = 'flex';
     }
