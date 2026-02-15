@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V6.2 - PWA RESTORED</title>
+    <title>PRO LISTE V6.3 - PWA GUARANTEED</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
     <meta name="theme-color" content="#3b82f6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="data:application/manifest+json,{'name':'Market Listem','short_name':'Market','start_url':'.','display':'standalone','background_color':'#ffffff','theme_color':'#3b82f6','icons':[{'src':'https://cdn-icons-png.flaticon.com/512/3081/3081840.png','sizes':'512x512','type':'image/png'}]}">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Market Listem">
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/3081/3081840.png">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3081/3081840.png">
+    <link rel="manifest" href="data:application/manifest+json,{'name':'Market Listem','short_name':'Market','start_url':'index.html','display':'standalone','background_color':'#ffffff','theme_color':'#3b82f6','icons':[{'src':'https://cdn-icons-png.flaticon.com/512/3081/3081840.png','sizes':'512x512','type':'image/png'}]}">
     
     <style>
         :root { --bg: #ffffff; --card: #f8fafc; --accent: #3b82f6; --success: #22c55e; --danger: #ef4444; --text: #1e293b; --shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -105,9 +109,12 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-    // PWA Service Worker Kaydı (GERİ GETİRİLDİ)
+    // PWA SERVICE WORKER REGISTRATION (EN BAŞTA OLMALI)
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('data:application/javascript,self.addEventListener(\'fetch\', function(event) { event.respondWith(fetch(event.request)); });');
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('data:application/javascript,self.addEventListener(\'fetch\', function(event) { event.respondWith(fetch(event.request)); });')
+            .then(reg => console.log('PWA OK')).catch(err => console.log('PWA ERR'));
+        });
     }
 
     const firebaseConfig = {
