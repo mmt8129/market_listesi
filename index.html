@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V6.7 - PERFORMANCE GRID</title>
+    <title>PRO LISTE V6.8 - 3'LÜ GRID</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -20,7 +20,7 @@
             --success: #15803d; 
             --danger: #dc3545; 
             --text: #2c3e4e; 
-            --shadow: 0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04); 
+            --shadow: 0 1px 3px rgba(0,0,0,0.05); 
         }
         body { 
             margin: 0; 
@@ -42,9 +42,8 @@
             touch-action: pan-x pan-y; 
         }
         
-        /* PERFORMANS: blur efekti tamamen kaldırıldı, sadece opaklık kullanılıyor */
         .blur-target { 
-            transition: opacity 0.15s ease; 
+            transition: opacity 0.12s ease; 
             display: flex; 
             flex-direction: column; 
             height: 100vh; 
@@ -56,54 +55,64 @@
         
         .top-fixed-bar { 
             background: var(--bg); 
-            padding: 8px 12px; 
+            padding: 8px 10px; 
             border-bottom: 2px solid #1e3a8a; 
             z-index: 100; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
         }
-        .header-row { display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-wrap: wrap; }
-        .left-btns, .right-btns { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 4px; 
+            flex-wrap: wrap; 
+        }
+        .left-btns, .right-btns { 
+            display: flex; 
+            gap: 5px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
         
-        /* PERFORMANS: buton animasyonları minimize edildi */
         .circle-btn { 
-            width: 38px; 
-            height: 38px; 
-            border-radius: 10px; 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 9px; 
             border: none; 
-            font-size: 18px; 
+            font-size: 17px; 
             font-weight: bold; 
             color: white; 
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
             cursor: pointer;
             transition: none;
             -webkit-tap-highlight-color: transparent;
             outline: none;
+            flex-shrink: 0;
         }
         .circle-btn:active { opacity: 0.8; }
-        .btn-star { background: #f59e0b; color: white; font-size: 20px; }
-        .btn-trash { background: #64748b; font-size: 20px; }
+        .btn-star { background: #f59e0b; color: white; font-size: 18px; }
+        .btn-trash { background: #64748b; font-size: 18px; }
         .btn-plus { background: var(--success); }
         .btn-minus { background: #94a3b8; }
-        .btn-bulk { background: var(--accent); font-size: 13px; }
+        .btn-bulk { background: var(--accent); font-size: 12px; }
 
-        /* ARAMA INPUTU */
+        /* ARAMA INPUTU - HER ZAMAN GÖRÜNÜR */
         .search-bar {
             width: 100%;
-            padding: 8px 12px;
-            border-radius: 10px;
+            padding: 7px 10px;
+            border-radius: 9px;
             border: 1.5px solid #ddd2b6;
             background: white;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             outline: none;
             box-sizing: border-box;
             font-family: inherit;
             color: var(--text);
             margin-top: 6px;
-            display: none;
             -webkit-appearance: none;
         }
         .search-bar:focus { border-color: var(--accent); }
@@ -113,28 +122,27 @@
             flex-grow: 1; 
             overflow-y: auto; 
             overflow-x: hidden;
-            padding: 8px; 
+            padding: 6px; 
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
             align-content: start;
-            transition: padding-bottom 0.15s ease; 
             -webkit-overflow-scrolling: touch;
         }
         
-        /* GRID KART: 2'li kare tasarım */
+        /* 3'LÜ KARE KART */
         .item-card { 
             background: rgba(255, 255, 245, 0.98);
-            border-radius: 14px; 
+            border-radius: 12px; 
             aspect-ratio: 1 / 1;
             display: flex; 
             flex-direction: column;
             justify-content: center; 
             align-items: center; 
-            padding: 10px 8px; 
+            padding: 6px 5px; 
             box-sizing: border-box; 
             border: 1px solid rgba(224, 213, 165, 0.5);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
             transition: none;
             cursor: pointer;
             text-align: center;
@@ -161,10 +169,10 @@
             width: 100%;
         }
         .item-price-tag { 
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: 900; 
             color: var(--accent); 
-            margin-top: 4px;
+            margin-top: 3px;
         }
         
         .item-card.selected { 
@@ -174,36 +182,35 @@
         .item-card.selected::after { 
             content: '✕'; 
             position: absolute; 
-            top: 6px; 
-            right: 10px; 
+            top: 4px; 
+            right: 6px; 
             color: var(--accent); 
-            font-size: 20px; 
+            font-size: 18px; 
             font-weight: 900; 
             line-height: 1;
         }
 
-        /* ARAMA SONUÇ YOK */
         .no-results {
             grid-column: 1 / -1;
             text-align: center;
-            padding: 30px;
+            padding: 24px;
             font-weight: 800;
             color: #94a3b8;
-            font-size: 16px;
+            font-size: 15px;
             text-transform: uppercase;
         }
 
         .bottom-banner { 
             background: rgba(255, 255, 245, 0.94);
             border-top: 2px solid var(--accent); 
-            padding: 10px 16px; 
+            padding: 8px 14px; 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            box-shadow: 0 -2px 6px rgba(0,0,0,0.04); 
+            box-shadow: 0 -1px 4px rgba(0,0,0,0.04); 
         }
-        #total-value-display { font-size: 24px; font-weight: 900; color: var(--text); }
-        .stats-mini { font-size: 12px; font-weight: 800; color: #64748b; text-align: right; }
+        #total-value-display { font-size: 22px; font-weight: 900; color: var(--text); }
+        .stats-mini { font-size: 11px; font-weight: 800; color: #64748b; text-align: right; }
 
         /* MODAL */
         .modal { 
@@ -223,53 +230,77 @@
             background: rgba(255, 255, 245, 0.99);
             width: 92%; 
             max-width: 450px; 
-            padding: 16px; 
-            border-radius: 20px; 
+            padding: 14px; 
+            border-radius: 18px; 
             box-sizing: border-box; 
             position: relative; 
-            height: 65vh; 
+            height: 62vh; 
             display: flex; 
             flex-direction: column; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.18);
             border: 1px solid rgba(224, 213, 165, 0.5);
         }
-        .modal-content.small-modal { height: auto; max-height: 80vh; }
+        .modal-content.small-modal { height: auto; max-height: 78vh; }
         .fav-list-area { 
             overflow-y: auto; 
             flex-grow: 1; 
-            margin: 8px 0; 
+            margin: 6px 0; 
             border: 1px solid #ddd2b6; 
-            border-radius: 14px; 
+            border-radius: 12px; 
             background: rgba(255,255,245,0.8); 
             -webkit-overflow-scrolling: touch;
         }
         .fav-row { 
             display: flex; 
             align-items: center; 
-            padding: 6px 10px; 
+            padding: 5px 8px; 
             border-bottom: 1px solid #e0d5bd; 
-            gap: 10px; 
+            gap: 8px; 
             font-weight: 800; 
             text-transform: uppercase; 
             color: var(--text); 
             font-size: 13px;
             -webkit-tap-highlight-color: transparent;
-        }
-        .fav-row input[type="checkbox"] { 
-            width: 20px; 
-            height: 20px; 
-            flex-shrink: 0; 
-            accent-color: var(--accent);
             cursor: pointer;
-            margin: 0;
         }
-        .fav-row label { flex: 1; cursor: pointer; }
 
-        /* FAVORİ ARAMA */
+        /* ÖZEL CHECKBOX TASARIMI */
+        .custom-checkbox {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            border-radius: 5px;
+            border: 2px solid #c0b89a;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: none;
+        }
+        .custom-checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        .custom-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 15px;
+            font-weight: 900;
+            line-height: 1;
+            position: absolute;
+        }
+        .fav-row label { 
+            flex: 1; 
+            cursor: pointer; 
+            font-size: 13px;
+        }
+
         .fav-search-bar {
             width: 100%;
-            padding: 8px 12px;
-            border-radius: 10px;
+            padding: 7px 10px;
+            border-radius: 9px;
             border: 1.5px solid #ddd2b6;
             background: white;
             font-size: 13px;
@@ -278,7 +309,7 @@
             box-sizing: border-box;
             font-family: inherit;
             color: var(--text);
-            margin-bottom: 6px;
+            margin-bottom: 5px;
             -webkit-appearance: none;
         }
         .fav-search-bar:focus { border-color: var(--accent); }
@@ -286,28 +317,28 @@
 
         input, textarea { 
             width: 100%; 
-            padding: 12px 14px; 
-            margin: 6px 0; 
+            padding: 11px 12px; 
+            margin: 5px 0; 
             background: white; 
             border: 1.5px solid #ddd2b6; 
-            border-radius: 14px; 
+            border-radius: 12px; 
             box-sizing: border-box; 
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: bold; 
             outline: none;
             font-family: inherit;
             -webkit-appearance: none;
         }
         input:focus, textarea:focus { border-color: var(--accent); }
-        .modal-btns { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; }
+        .modal-btns { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
         .modal-btns button { 
             flex: 1; 
-            padding: 12px; 
-            border-radius: 20px; 
+            padding: 11px; 
+            border-radius: 18px; 
             border: none; 
             font-weight: 900; 
             cursor: pointer; 
-            font-size: 14px; 
+            font-size: 13px; 
             transition: none;
             -webkit-tap-highlight-color: transparent;
         }
@@ -317,19 +348,19 @@
 
         .floating-confirm { 
             position: fixed; 
-            bottom: 24px; 
+            bottom: 20px; 
             left: 0; 
             width: 100%; 
             display: none; 
             justify-content: center; 
-            gap: 16px; 
+            gap: 14px; 
             z-index: 1500; 
         }
         .floating-confirm .circle-btn {
-            width: 58px;
-            height: 58px;
-            border-radius: 28px;
-            font-size: 26px;
+            width: 54px;
+            height: 54px;
+            border-radius: 26px;
+            font-size: 24px;
         }
         #loading-screen { 
             position: fixed; 
@@ -350,14 +381,13 @@
             justify-content:center; 
             align-items:center; 
             color: var(--accent); 
-            font-size: 20px; 
+            font-size: 19px; 
             font-weight:900; 
         }
         
-        h3 { color: var(--accent); margin: 0 0 10px 0; font-size: 18px; }
-        p { color: var(--text); margin: 6px 0; }
+        h3 { color: var(--accent); margin: 0 0 8px 0; font-size: 17px; }
+        p { color: var(--text); margin: 5px 0; }
 
-        /* SCROLLBAR minimal */
         .container::-webkit-scrollbar,
         .fav-list-area::-webkit-scrollbar { width: 3px; }
         .container::-webkit-scrollbar-thumb,
@@ -374,7 +404,6 @@
             <div class="left-btns">
                 <button class="circle-btn btn-trash" id="clearListBtn">🗑️</button>
                 <button class="circle-btn btn-star" id="openFavs">⭐</button>
-                <button class="circle-btn" id="toggleSearch" style="background:#64748b; font-size:16px;">🔍</button>
             </div>
             <div class="right-btns">
                 <button class="circle-btn btn-bulk" id="mBulkList">+++</button>
@@ -382,7 +411,7 @@
                 <button class="circle-btn btn-minus" id="delQuick">-</button>
             </div>
         </div>
-        <input type="text" class="search-bar" id="mainSearchBar" placeholder="ÜRÜN ARA...">
+        <input type="text" class="search-bar" id="mainSearchBar" placeholder="🔍 ÜRÜN ARA...">
     </div>
 
     <div class="container" id="mainGrid"></div>
@@ -394,7 +423,7 @@
         </div>
         <div class="stats-mini">
             <div>TOPLAM ÜRÜN</div>
-            <div style="font-size: 16px; color: var(--text);" id="total-items-count">0</div>
+            <div style="font-size: 15px; color: var(--text);" id="total-items-count">0</div>
         </div>
     </div>
 </div>
@@ -441,6 +470,7 @@
     let favDeleteMode = false;
     let searchQuery = '';
     let favSearchQuery = '';
+    let selectedFavs = new Set();
 
     const $ = id => document.getElementById(id);
 
@@ -464,7 +494,6 @@
     function render() {
         const grid = $('mainGrid'); 
         grid.innerHTML = ''; 
-        let total = 0;
         
         const filteredList = getFilteredList();
         
@@ -475,7 +504,7 @@
             grid.appendChild(noRes);
         }
         
-        filteredList.forEach((item, displayIndex) => {
+        filteredList.forEach((item) => {
             const realIndex = currentList.indexOf(item);
             const card = document.createElement('div');
             card.className = `item-card ${item.price > 0 ? 'has-price' : ''} ${deleteMode && selectedForDelete.has(realIndex) ? 'selected' : ''}`;
@@ -488,10 +517,8 @@
                 } else openEditModal(realIndex); 
             };
             grid.appendChild(card); 
-            if(item.price > 0) total += parseFloat(item.price);
         });
         
-        // Tüm listedeki toplamı göster (filtreli değil)
         let fullTotal = 0;
         currentList.forEach(item => { if(item.price > 0) fullTotal += parseFloat(item.price); });
         
@@ -506,21 +533,6 @@
         document.body.classList.remove('modal-open'); 
     }
 
-    // ARAMA TOGGLE
-    $('toggleSearch').onclick = () => {
-        const searchBar = $('mainSearchBar');
-        if(searchBar.style.display === 'none' || searchBar.style.display === '') {
-            searchBar.style.display = 'block';
-            searchBar.focus();
-        } else {
-            searchBar.style.display = 'none';
-            searchBar.value = '';
-            searchQuery = '';
-            render();
-        }
-    };
-
-    // ARAMA INPUT - debounce yok, direkt render (performans için yeterli)
     $('mainSearchBar').oninput = function() {
         searchQuery = this.value;
         render();
@@ -561,7 +573,7 @@
         document.body.classList.add('modal-open');
         const currentTotal = parseFloat($('total-value-display').innerText);
         $('mContent').className = "modal-content small-modal";
-        $('mContent').innerHTML = `<h3>BAKİYE HESABI</h3><input type="number" id="budgetInput" placeholder="CEBİNDEKİ PARA" value="${userBudget || ''}"><div id="resultCalc" style="text-align:center; font-weight:900; font-size:20px; margin:8px 0;"></div><div class="modal-btns"><button class="btn-ok" id="btnSaveBudget">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">KAPAT</button></div>`;
+        $('mContent').innerHTML = `<h3>BAKİYE HESABI</h3><input type="number" id="budgetInput" placeholder="CEBİNDEKİ PARA" value="${userBudget || ''}"><div id="resultCalc" style="text-align:center; font-weight:900; font-size:18px; margin:6px 0;"></div><div class="modal-btns"><button class="btn-ok" id="btnSaveBudget">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">KAPAT</button></div>`;
         $('gModal').style.display = 'flex';
         const bInp = $('budgetInput');
         const update = () => { const b = parseFloat(bInp.value) || 0; const k = b - currentTotal; $('resultCalc').innerText = `KALAN: ${k.toFixed(2)} TL`; $('resultCalc').style.color = k < 0 ? 'var(--danger)' : '#15803d'; };
@@ -572,7 +584,12 @@
         setTimeout(() => bInp.focus(), 50);
     };
 
-    $('openFavs').onclick = () => { favDeleteMode = false; favSearchQuery = ''; renderFavModal(); };
+    $('openFavs').onclick = () => { 
+        favDeleteMode = false; 
+        favSearchQuery = ''; 
+        selectedFavs.clear(); 
+        renderFavModal(); 
+    };
 
     function getFilteredFavs() {
         if(!favSearchQuery) return favList;
@@ -584,11 +601,11 @@
         document.body.classList.add('modal-open');
         $('mContent').className = "modal-content";
         $('mContent').innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
-                <h3 style="margin:0; font-size:17px;">FAVORİLER</h3>
-                <div style="display:flex; gap:6px;">
-                    <button class="circle-btn btn-plus" id="addFavItem" style="width:36px; height:36px;">+</button>
-                    <button class="circle-btn btn-minus" id="toggleFavDel" style="width:36px; height:36px; background:${favDeleteMode?'var(--danger)':'#94a3b8'}">-</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                <h3 style="margin:0; font-size:16px;">FAVORİLER</h3>
+                <div style="display:flex; gap:5px;">
+                    <button class="circle-btn btn-plus" id="addFavItem" style="width:32px; height:32px;">+</button>
+                    <button class="circle-btn btn-minus" id="toggleFavDel" style="width:32px; height:32px; background:${favDeleteMode?'var(--danger)':'#94a3b8'}">-</button>
                 </div>
             </div>
             <input type="text" class="fav-search-bar" id="favSearchBar" placeholder="🔍 FAVORİ ARA..." value="${escapeHtml(favSearchQuery)}">
@@ -604,21 +621,33 @@
         
         if(filteredFavs.length === 0 && favSearchQuery) {
             const noRes = document.createElement('div');
-            noRes.style.cssText = 'text-align:center; padding:20px; font-weight:800; color:#94a3b8; font-size:13px; text-transform:uppercase;';
+            noRes.style.cssText = 'text-align:center; padding:18px; font-weight:800; color:#94a3b8; font-size:12px; text-transform:uppercase;';
             noRes.textContent = '🔍 SONUÇ BULUNAMADI';
             listArea.appendChild(noRes);
         }
         
         filteredFavs.forEach(fav => {
             const realIndex = favList.indexOf(fav);
+            const isChecked = selectedFavs.has(realIndex);
+            
             const div = document.createElement('div'); 
             div.className = 'fav-row';
-            div.innerHTML = `<input type="checkbox" id="fav_${realIndex}"> <label for="fav_${realIndex}" style="flex:1;">${escapeHtml(fav)}</label>`;
-            div.onclick = (e) => { if(e.target.tagName !== 'INPUT') $(`fav_${realIndex}`).checked = !$(`fav_${realIndex}`).checked; };
+            div.innerHTML = `
+                <div class="custom-checkbox ${isChecked ? 'checked' : ''}" data-index="${realIndex}"></div>
+                <label>${escapeHtml(fav)}</label>`;
+            
+            div.onclick = function(e) {
+                if(selectedFavs.has(realIndex)) {
+                    selectedFavs.delete(realIndex);
+                } else {
+                    selectedFavs.add(realIndex);
+                }
+                renderFavModal();
+            };
+            
             listArea.appendChild(div);
         });
 
-        // Favori arama
         $('favSearchBar').oninput = function() {
             favSearchQuery = this.value;
             renderFavModal();
@@ -626,16 +655,17 @@
         setTimeout(() => $('favSearchBar').focus(), 50);
 
         $('addFavItem').onclick = openAddFavModal;
-        $('toggleFavDel').onclick = () => { favDeleteMode = !favDeleteMode; renderFavModal(); };
+        $('toggleFavDel').onclick = () => { 
+            favDeleteMode = !favDeleteMode; 
+            selectedFavs.clear();
+            renderFavModal(); 
+        };
 
         $('addSelectedToMain').onclick = () => {
-            const selectedIdx = []; 
-            favList.forEach((_, idx) => { 
-                const cb = $(`fav_${idx}`);
-                if(cb && cb.checked) selectedIdx.push(idx); 
-            });
+            const selectedIdx = Array.from(selectedFavs);
             if(favDeleteMode) { 
                 favList = favList.filter((_, idx) => !selectedIdx.includes(idx)); 
+                selectedFavs.clear();
                 syncFavs(); 
                 renderFavModal(); 
             } else { 
