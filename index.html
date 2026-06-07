@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <title>PRO LISTE V6.8 - 3'LÜ GRID</title>
+    <title>PRO LISTE V6.9 - STABLE GRID</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -20,8 +20,8 @@
             --success: #15803d; 
             --danger: #dc3545; 
             --text: #2c3e4e; 
-            --shadow: 0 1px 3px rgba(0,0,0,0.05); 
         }
+        * { box-sizing: border-box; }
         body { 
             margin: 0; 
             font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif; 
@@ -59,6 +59,7 @@
             border-bottom: 2px solid #1e3a8a; 
             z-index: 100; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+            flex-shrink: 0;
         }
         .header-row { 
             display: flex; 
@@ -99,7 +100,6 @@
         .btn-minus { background: #94a3b8; }
         .btn-bulk { background: var(--accent); font-size: 12px; }
 
-        /* ARAMA INPUTU - HER ZAMAN GÖRÜNÜR */
         .search-bar {
             width: 100%;
             padding: 7px 10px;
@@ -109,7 +109,6 @@
             font-size: 13px;
             font-weight: 700;
             outline: none;
-            box-sizing: border-box;
             font-family: inherit;
             color: var(--text);
             margin-top: 6px;
@@ -130,17 +129,25 @@
             -webkit-overflow-scrolling: touch;
         }
         
-        /* 3'LÜ KARE KART */
+        /* KARE KART - aspect-ratio yerine padding-bottom yöntemi */
+        .item-card-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+        }
         .item-card { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(255, 255, 245, 0.98);
             border-radius: 12px; 
-            aspect-ratio: 1 / 1;
             display: flex; 
             flex-direction: column;
             justify-content: center; 
             align-items: center; 
             padding: 6px 5px; 
-            box-sizing: border-box; 
             border: 1px solid rgba(224, 213, 165, 0.5);
             box-shadow: 0 1px 3px rgba(0,0,0,0.04);
             transition: none;
@@ -148,8 +155,6 @@
             text-align: center;
             word-break: break-word;
             -webkit-tap-highlight-color: transparent;
-            position: relative;
-            min-height: 0;
         }
         .item-card:active { opacity: 0.85; }
         .item-card.has-price { background: var(--danger); border-color: var(--danger); }
@@ -176,8 +181,7 @@
         }
         
         .item-card.selected { 
-            border: 3px solid var(--accent) !important; 
-            position: relative; 
+            border: 3px solid var(--accent); 
         }
         .item-card.selected::after { 
             content: '✕'; 
@@ -208,11 +212,11 @@
             justify-content: space-between; 
             align-items: center; 
             box-shadow: 0 -1px 4px rgba(0,0,0,0.04); 
+            flex-shrink: 0;
         }
         #total-value-display { font-size: 22px; font-weight: 900; color: var(--text); }
         .stats-mini { font-size: 11px; font-weight: 800; color: #64748b; text-align: right; }
 
-        /* MODAL */
         .modal { 
             position: fixed; 
             top: 0; 
@@ -232,7 +236,6 @@
             max-width: 450px; 
             padding: 14px; 
             border-radius: 18px; 
-            box-sizing: border-box; 
             position: relative; 
             height: 62vh; 
             display: flex; 
@@ -262,9 +265,9 @@
             font-size: 13px;
             -webkit-tap-highlight-color: transparent;
             cursor: pointer;
+            min-height: 38px;
         }
 
-        /* ÖZEL CHECKBOX TASARIMI */
         .custom-checkbox {
             width: 22px;
             height: 22px;
@@ -306,11 +309,11 @@
             font-size: 13px;
             font-weight: 700;
             outline: none;
-            box-sizing: border-box;
             font-family: inherit;
             color: var(--text);
             margin-bottom: 5px;
             -webkit-appearance: none;
+            flex-shrink: 0;
         }
         .fav-search-bar:focus { border-color: var(--accent); }
         .fav-search-bar::placeholder { color: #94a3b8; font-weight: 500; }
@@ -322,7 +325,6 @@
             background: white; 
             border: 1.5px solid #ddd2b6; 
             border-radius: 12px; 
-            box-sizing: border-box; 
             font-size: 14px; 
             font-weight: bold; 
             outline: none;
@@ -330,7 +332,7 @@
             -webkit-appearance: none;
         }
         input:focus, textarea:focus { border-color: var(--accent); }
-        .modal-btns { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; }
+        .modal-btns { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; flex-shrink: 0; }
         .modal-btns button { 
             flex: 1; 
             padding: 11px; 
@@ -385,7 +387,7 @@
             font-weight:900; 
         }
         
-        h3 { color: var(--accent); margin: 0 0 8px 0; font-size: 17px; }
+        h3 { color: var(--accent); margin: 0 0 8px 0; font-size: 17px; flex-shrink: 0; }
         p { color: var(--text); margin: 5px 0; }
 
         .container::-webkit-scrollbar,
@@ -471,6 +473,7 @@
     let searchQuery = '';
     let favSearchQuery = '';
     let selectedFavs = new Set();
+    let favListScrollPos = 0;
 
     const $ = id => document.getElementById(id);
 
@@ -506,6 +509,9 @@
         
         filteredList.forEach((item) => {
             const realIndex = currentList.indexOf(item);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'item-card-wrapper';
+            
             const card = document.createElement('div');
             card.className = `item-card ${item.price > 0 ? 'has-price' : ''} ${deleteMode && selectedForDelete.has(realIndex) ? 'selected' : ''}`;
             card.innerHTML = `<div class="item-text">${escapeHtml(item.name)}</div><div class="item-price-tag">${item.price > 0 ? item.price + ' TL' : ''}</div>`;
@@ -516,7 +522,9 @@
                     render(); 
                 } else openEditModal(realIndex); 
             };
-            grid.appendChild(card); 
+            
+            wrapper.appendChild(card);
+            grid.appendChild(wrapper); 
         });
         
         let fullTotal = 0;
@@ -587,7 +595,17 @@
     $('openFavs').onclick = () => { 
         favDeleteMode = false; 
         favSearchQuery = ''; 
-        selectedFavs.clear(); 
+        selectedFavs.clear();
+        favListScrollPos = 0;
+        
+        // Ana listedeki ürünleri favorilerle eşleştirip otomatik seç
+        currentList.forEach(item => {
+            const favIndex = favList.indexOf(item.name);
+            if(favIndex !== -1) {
+                selectedFavs.add(favIndex);
+            }
+        });
+        
         renderFavModal(); 
     };
 
@@ -598,6 +616,12 @@
     }
 
     function renderFavModal() {
+        // Scroll pozisyonunu kaydet
+        const listAreaOld = $('favListItems');
+        if(listAreaOld) {
+            favListScrollPos = listAreaOld.scrollTop;
+        }
+        
         document.body.classList.add('modal-open');
         $('mContent').className = "modal-content";
         $('mContent').innerHTML = `
@@ -642,22 +666,36 @@
                 } else {
                     selectedFavs.add(realIndex);
                 }
-                renderFavModal();
+                // Sadece checkbox durumunu güncelle, tüm listeyi yeniden render etme
+                const cb = div.querySelector('.custom-checkbox');
+                if(selectedFavs.has(realIndex)) {
+                    cb.classList.add('checked');
+                } else {
+                    cb.classList.remove('checked');
+                }
             };
             
             listArea.appendChild(div);
         });
 
+        // Scroll pozisyonunu geri yükle
+        setTimeout(() => {
+            $('favListItems').scrollTop = favListScrollPos;
+        }, 0);
+
+        // Favori arama - focus YOK, sadece input olayı
         $('favSearchBar').oninput = function() {
             favSearchQuery = this.value;
+            favListScrollPos = 0;
             renderFavModal();
         };
-        setTimeout(() => $('favSearchBar').focus(), 50);
+        // Focus OTOMATİK YOK - kullanıcı kendisi tıklarsa açılır
 
         $('addFavItem').onclick = openAddFavModal;
         $('toggleFavDel').onclick = () => { 
             favDeleteMode = !favDeleteMode; 
             selectedFavs.clear();
+            favListScrollPos = 0;
             renderFavModal(); 
         };
 
@@ -666,6 +704,7 @@
             if(favDeleteMode) { 
                 favList = favList.filter((_, idx) => !selectedIdx.includes(idx)); 
                 selectedFavs.clear();
+                favListScrollPos = 0;
                 syncFavs(); 
                 renderFavModal(); 
             } else { 
