@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <title>PRO LISTE V6.7 - PERFORMANCE GRID</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        :root { 
+            --bg: rgba(255, 255, 245, 0.94); 
+            --card: rgba(255, 255, 245, 0.96); 
+            --accent: #1e3a8a; 
+            --success: #15803d; 
+            --danger: #dc3545; 
+            --text: #2c3e4e; 
+            --shadow: 0 2px 6px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04); 
+        }
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif; 
+            background-color: #faf3e0;
+            background-image: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 29px,
+                #e0d5bd 30px,
+                #e0d5bd 31px
+            );
+            color: var(--text); 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+            user-select: none; 
+            touch-action: pan-x pan-y; 
+        }
+        
+        /* PERFORMANS: blur efekti tamamen kaldırıldı, sadece opaklık kullanılıyor */
+        .blur-target { 
+            transition: opacity 0.15s ease; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+        }
+        body.modal-open .blur-target { 
+            opacity: 0.4; 
+            pointer-events: none; 
+        }
+        
+        .top-fixed-bar { 
+            background: var(--bg); 
+            padding: 8px 12px; 
+            border-bottom: 2px solid #1e3a8a; 
+            z-index: 100; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06); 
+        }
+        .header-row { display: flex; justify-content: space-between; align-items: center; gap: 4px; flex-wrap: wrap; }
+        .left-btns, .right-btns { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        
+        /* PERFORMANS: buton animasyonları minimize edildi */
+        .circle-btn { 
+            width: 38px; 
+            height: 38px; 
+            border-radius: 10px; 
+            border: none; 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            cursor: pointer;
+            transition: none;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        .circle-btn:active { opacity: 0.8; }
+        .btn-star { background: #f59e0b; color: white; font-size: 20px; }
+        .btn-trash { background: #64748b; font-size: 20px; }
+        .btn-plus { background: var(--success); }
+        .btn-minus { background: #94a3b8; }
+        .btn-bulk { background: var(--accent); font-size: 13px; }
+
+        /* ARAMA INPUTU */
+        .search-bar {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1.5px solid #ddd2b6;
+            background: white;
+            font-size: 14px;
+            font-weight: 700;
+            outline: none;
+            box-sizing: border-box;
+            font-family: inherit;
+            color: var(--text);
+            margin-top: 6px;
+            display: none;
+            -webkit-appearance: none;
+        }
+        .search-bar:focus { border-color: var(--accent); }
+        .search-bar::placeholder { color: #94a3b8; font-weight: 500; }
+
+        .container { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 8px; 
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            align-content: start;
+            transition: padding-bottom 0.15s ease; 
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* GRID KART: 2'li kare tasarım */
+        .item-card { 
+            background: rgba(255, 255, 245, 0.98);
+            border-radius: 14px; 
+            aspect-ratio: 1 / 1;
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            padding: 10px 8px; 
+            box-sizing: border-box; 
+            border: 1px solid rgba(224, 213, 165, 0.5);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+            transition: none;
+            cursor: pointer;
+            text-align: center;
+            word-break: break-word;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            min-height: 0;
+        }
+        .item-card:active { opacity: 0.85; }
+        .item-card.has-price { background: var(--danger); border-color: var(--danger); }
+        .item-card.has-price .item-text, 
+        .item-card.has-price .item-price-tag { color: white; }
+        
+        .item-text { 
+            font-size: 14px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: var(--text); 
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            width: 100%;
+        }
+        .item-price-tag { 
+            font-size: 15px; 
+            font-weight: 900; 
+            color: var(--accent); 
+            margin-top: 4px;
+        }
+        
+        .item-card.selected { 
+            border: 3px solid var(--accent) !important; 
+            position: relative; 
+        }
+        .item-card.selected::after { 
+            content: '✕'; 
+            position: absolute; 
+            top: 6px; 
+            right: 10px; 
+            color: var(--accent); 
+            font-size: 20px; 
+            font-weight: 900; 
+            line-height: 1;
+        }
+
+        /* ARAMA SONUÇ YOK */
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 30px;
+            font-weight: 800;
+            color: #94a3b8;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .bottom-banner { 
+            background: rgba(255, 255, 245, 0.94);
+            border-top: 2px solid var(--accent); 
+            padding: 10px 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 -2px 6px rgba(0,0,0,0.04); 
+        }
+        #total-value-display { font-size: 24px; font-weight: 900; color: var(--text); }
+        .stats-mini { font-size: 12px; font-weight: 800; color: #64748b; text-align: right; }
+
+        /* MODAL */
+        .modal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.45); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2000; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        .modal-content { 
+            background: rgba(255, 255, 245, 0.99);
+            width: 92%; 
+            max-width: 450px; 
+            padding: 16px; 
+            border-radius: 20px; 
+            box-sizing: border-box; 
+            position: relative; 
+            height: 65vh; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            border: 1px solid rgba(224, 213, 165, 0.5);
+        }
+        .modal-content.small-modal { height: auto; max-height: 80vh; }
+        .fav-list-area { 
+            overflow-y: auto; 
+            flex-grow: 1; 
+            margin: 8px 0; 
+            border: 1px solid #ddd2b6; 
+            border-radius: 14px; 
+            background: rgba(255,255,245,0.8); 
+            -webkit-overflow-scrolling: touch;
+        }
+        .fav-row { 
+            display: flex; 
+            align-items: center; 
+            padding: 6px 10px; 
+            border-bottom: 1px solid #e0d5bd; 
+            gap: 10px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: var(--text); 
+            font-size: 13px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .fav-row input[type="checkbox"] { 
+            width: 20px; 
+            height: 20px; 
+            flex-shrink: 0; 
+            accent-color: var(--accent);
+            cursor: pointer;
+            margin: 0;
+        }
+        .fav-row label { flex: 1; cursor: pointer; }
+
+        /* FAVORİ ARAMA */
+        .fav-search-bar {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 1.5px solid #ddd2b6;
+            background: white;
+            font-size: 13px;
+            font-weight: 700;
+            outline: none;
+            box-sizing: border-box;
+            font-family: inherit;
+            color: var(--text);
+            margin-bottom: 6px;
+            -webkit-appearance: none;
+        }
+        .fav-search-bar:focus { border-color: var(--accent); }
+        .fav-search-bar::placeholder { color: #94a3b8; font-weight: 500; }
+
+        input, textarea { 
+            width: 100%; 
+            padding: 12px 14px; 
+            margin: 6px 0; 
+            background: white; 
+            border: 1.5px solid #ddd2b6; 
+            border-radius: 14px; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+            font-weight: bold; 
+            outline: none;
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
+        .modal-btns { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; }
+        .modal-btns button { 
+            flex: 1; 
+            padding: 12px; 
+            border-radius: 20px; 
+            border: none; 
+            font-weight: 900; 
+            cursor: pointer; 
+            font-size: 14px; 
+            transition: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .modal-btns button:active { opacity: 0.8; }
+        .btn-ok { background: var(--accent); color: white; }
+        .btn-cancel { background: #e2e8f0; color: #64748b; }
+
+        .floating-confirm { 
+            position: fixed; 
+            bottom: 24px; 
+            left: 0; 
+            width: 100%; 
+            display: none; 
+            justify-content: center; 
+            gap: 16px; 
+            z-index: 1500; 
+        }
+        .floating-confirm .circle-btn {
+            width: 58px;
+            height: 58px;
+            border-radius: 28px;
+            font-size: 26px;
+        }
+        #loading-screen { 
+            position: fixed; 
+            top:0; 
+            left:0; 
+            width:100%; 
+            height:100%; 
+            background: #faf3e0;
+            background-image: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 29px,
+                #e0d5bd 30px,
+                #e0d5bd 31px
+            );
+            z-index:9999; 
+            display:flex; 
+            justify-content:center; 
+            align-items:center; 
+            color: var(--accent); 
+            font-size: 20px; 
+            font-weight:900; 
+        }
+        
+        h3 { color: var(--accent); margin: 0 0 10px 0; font-size: 18px; }
+        p { color: var(--text); margin: 6px 0; }
+
+        /* SCROLLBAR minimal */
+        .container::-webkit-scrollbar,
+        .fav-list-area::-webkit-scrollbar { width: 3px; }
+        .container::-webkit-scrollbar-thumb,
+        .fav-list-area::-webkit-scrollbar-thumb { background: #ddd2b6; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<div id="loading-screen">YÜKLENİYOR...</div>
+
+<div class="blur-target" id="mainWrapper">
+    <div class="top-fixed-bar">
+        <div class="header-row">
+            <div class="left-btns">
+                <button class="circle-btn btn-trash" id="clearListBtn">🗑️</button>
+                <button class="circle-btn btn-star" id="openFavs">⭐</button>
+                <button class="circle-btn" id="toggleSearch" style="background:#64748b; font-size:16px;">🔍</button>
+            </div>
+            <div class="right-btns">
+                <button class="circle-btn btn-bulk" id="mBulkList">+++</button>
+                <button class="circle-btn btn-plus" id="addQuick">+</button>
+                <button class="circle-btn btn-minus" id="delQuick">-</button>
+            </div>
+        </div>
+        <input type="text" class="search-bar" id="mainSearchBar" placeholder="ÜRÜN ARA...">
+    </div>
+
+    <div class="container" id="mainGrid"></div>
+
+    <div class="bottom-banner">
+        <div class="total-box" onclick="openBudgetModal()">
+            <div style="font-size: 10px; font-weight: 800; color: #64748b;">TOPLAM TUTAR</div>
+            <div id="total-value-display">0.00 TL</div>
+        </div>
+        <div class="stats-mini">
+            <div>TOPLAM ÜRÜN</div>
+            <div style="font-size: 16px; color: var(--text);" id="total-items-count">0</div>
+        </div>
+    </div>
+</div>
+
+<div class="floating-confirm" id="deleteControls">
+    <button class="circle-btn" id="confirmDel" style="background:var(--success);">✓</button>
+    <button class="circle-btn" id="cancelDel" style="background:var(--danger);">✕</button>
+</div>
+
+<div id="gModal" class="modal">
+    <div class="modal-content" id="mContent"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('PWA AKTİF')).catch(err => console.log('PWA HATASI'));
+        });
+    }
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA9whlWMrlyF6GMnWBK7SQA76qNFpO7RkQ",
+        authDomain: "market-listesi-d9338.firebaseapp.com",
+        projectId: "market-listesi-d9338",
+        storageBucket: "market-listesi-d9338.firebasestorage.app",
+        messagingSenderId: "91497340883",
+        appId: "1:91497340883:web:6e9280b4a70d0a6f38d926",
+        databaseURL: "https://market-listesi-d9338-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentList = [];
+    let favList = [];
+    let userBudget = 0;
+    let isReady = false;
+    let deleteMode = false;
+    let selectedForDelete = new Set();
+    let favDeleteMode = false;
+    let searchQuery = '';
+    let favSearchQuery = '';
+
+    const $ = id => document.getElementById(id);
+
+    db.ref('v5_app_state/current').on('value', snap => {
+        const cloud = snap.val();
+        if(cloud) { currentList = cloud.data || []; userBudget = cloud.budget || 0; }
+        isReady = true; $('loading-screen').style.display = 'none'; render();
+    });
+
+    db.ref('v5_app_state/favorites').on('value', snap => { favList = snap.val() || []; });
+
+    function sync() { if(!isReady) return; db.ref('v5_app_state/current').set({id: Date.now(), data: currentList, budget: userBudget}); }
+    function syncFavs() { db.ref('v5_app_state/favorites').set(favList); }
+
+    function getFilteredList() {
+        if(!searchQuery) return currentList;
+        const q = searchQuery.toUpperCase();
+        return currentList.filter(item => item.name.toUpperCase().includes(q));
+    }
+
+    function render() {
+        const grid = $('mainGrid'); 
+        grid.innerHTML = ''; 
+        let total = 0;
+        
+        const filteredList = getFilteredList();
+        
+        if(filteredList.length === 0 && searchQuery) {
+            const noRes = document.createElement('div');
+            noRes.className = 'no-results';
+            noRes.textContent = '🔍 SONUÇ BULUNAMADI';
+            grid.appendChild(noRes);
+        }
+        
+        filteredList.forEach((item, displayIndex) => {
+            const realIndex = currentList.indexOf(item);
+            const card = document.createElement('div');
+            card.className = `item-card ${item.price > 0 ? 'has-price' : ''} ${deleteMode && selectedForDelete.has(realIndex) ? 'selected' : ''}`;
+            card.innerHTML = `<div class="item-text">${escapeHtml(item.name)}</div><div class="item-price-tag">${item.price > 0 ? item.price + ' TL' : ''}</div>`;
+            card.onclick = () => { 
+                if(deleteMode) { 
+                    if(selectedForDelete.has(realIndex)) selectedForDelete.delete(realIndex); 
+                    else selectedForDelete.add(realIndex); 
+                    render(); 
+                } else openEditModal(realIndex); 
+            };
+            grid.appendChild(card); 
+            if(item.price > 0) total += parseFloat(item.price);
+        });
+        
+        // Tüm listedeki toplamı göster (filtreli değil)
+        let fullTotal = 0;
+        currentList.forEach(item => { if(item.price > 0) fullTotal += parseFloat(item.price); });
+        
+        $('total-value-display').innerText = fullTotal.toFixed(2) + ' TL';
+        $('total-items-count').innerText = currentList.length;
+    }
+    
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
+    function closeGModal() { 
+        $('gModal').style.display='none'; 
+        document.body.classList.remove('modal-open'); 
+    }
+
+    // ARAMA TOGGLE
+    $('toggleSearch').onclick = () => {
+        const searchBar = $('mainSearchBar');
+        if(searchBar.style.display === 'none' || searchBar.style.display === '') {
+            searchBar.style.display = 'block';
+            searchBar.focus();
+        } else {
+            searchBar.style.display = 'none';
+            searchBar.value = '';
+            searchQuery = '';
+            render();
+        }
+    };
+
+    // ARAMA INPUT - debounce yok, direkt render (performans için yeterli)
+    $('mainSearchBar').oninput = function() {
+        searchQuery = this.value;
+        render();
+    };
+
+    $('addQuick').onclick = () => {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3><input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        const inp = $('inName');
+        const save = () => { const n = inp.value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); sync(); } closeGModal(); };
+        $('btnSaveAdd').onclick = save;
+        inp.onkeydown = e => { if(e.key === 'Enter') save(); };
+        setTimeout(() => inp.focus(), 50);
+    };
+
+    function openEditModal(i) {
+        document.body.classList.add('modal-open');
+        const item = currentList[i];
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>DÜZENLE</h3><input type="text" id="edName" value="${escapeHtml(item.name)}"><input type="number" id="edPrice" placeholder="FİYAT (TL)" value="${item.price || ''}" autofocus><div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        const nameInp = $('edName');
+        const priceInp = $('edPrice');
+        const save = () => { 
+            currentList[i].name = nameInp.value.trim().toUpperCase(); 
+            currentList[i].price = parseFloat(priceInp.value) || 0; 
+            sync(); 
+            closeGModal(); 
+        };
+        $('btnSaveEdit').onclick = save;
+        priceInp.onkeydown = e => { if(e.key === 'Enter') save(); };
+        setTimeout(() => priceInp.focus(), 50);
+    }
+
+    window.openBudgetModal = function() {
+        document.body.classList.add('modal-open');
+        const currentTotal = parseFloat($('total-value-display').innerText);
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>BAKİYE HESABI</h3><input type="number" id="budgetInput" placeholder="CEBİNDEKİ PARA" value="${userBudget || ''}"><div id="resultCalc" style="text-align:center; font-weight:900; font-size:20px; margin:8px 0;"></div><div class="modal-btns"><button class="btn-ok" id="btnSaveBudget">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">KAPAT</button></div>`;
+        $('gModal').style.display = 'flex';
+        const bInp = $('budgetInput');
+        const update = () => { const b = parseFloat(bInp.value) || 0; const k = b - currentTotal; $('resultCalc').innerText = `KALAN: ${k.toFixed(2)} TL`; $('resultCalc').style.color = k < 0 ? 'var(--danger)' : '#15803d'; };
+        bInp.oninput = update;
+        bInp.onkeydown = e => { if(e.key === 'Enter') { userBudget = parseFloat(bInp.value) || 0; sync(); closeGModal(); } };
+        update();
+        $('btnSaveBudget').onclick = () => { userBudget = parseFloat(bInp.value) || 0; sync(); closeGModal(); };
+        setTimeout(() => bInp.focus(), 50);
+    };
+
+    $('openFavs').onclick = () => { favDeleteMode = false; favSearchQuery = ''; renderFavModal(); };
+
+    function getFilteredFavs() {
+        if(!favSearchQuery) return favList;
+        const q = favSearchQuery.toUpperCase();
+        return favList.filter(fav => fav.toUpperCase().includes(q));
+    }
+
+    function renderFavModal() {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content";
+        $('mContent').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+                <h3 style="margin:0; font-size:17px;">FAVORİLER</h3>
+                <div style="display:flex; gap:6px;">
+                    <button class="circle-btn btn-plus" id="addFavItem" style="width:36px; height:36px;">+</button>
+                    <button class="circle-btn btn-minus" id="toggleFavDel" style="width:36px; height:36px; background:${favDeleteMode?'var(--danger)':'#94a3b8'}">-</button>
+                </div>
+            </div>
+            <input type="text" class="fav-search-bar" id="favSearchBar" placeholder="🔍 FAVORİ ARA..." value="${escapeHtml(favSearchQuery)}">
+            <div class="fav-list-area" id="favListItems"></div>
+            <div class="modal-btns">
+                <button class="btn-ok" id="addSelectedToMain">${favDeleteMode ? 'SEÇİLENLERİ SİL' : 'ANA LİSTEYE EKLE'}</button>
+                <button class="btn-cancel" onclick="closeGModal()">KAPAT</button>
+            </div>`;
+        
+        const filteredFavs = getFilteredFavs();
+        const listArea = $('favListItems');
+        listArea.innerHTML = '';
+        
+        if(filteredFavs.length === 0 && favSearchQuery) {
+            const noRes = document.createElement('div');
+            noRes.style.cssText = 'text-align:center; padding:20px; font-weight:800; color:#94a3b8; font-size:13px; text-transform:uppercase;';
+            noRes.textContent = '🔍 SONUÇ BULUNAMADI';
+            listArea.appendChild(noRes);
+        }
+        
+        filteredFavs.forEach(fav => {
+            const realIndex = favList.indexOf(fav);
+            const div = document.createElement('div'); 
+            div.className = 'fav-row';
+            div.innerHTML = `<input type="checkbox" id="fav_${realIndex}"> <label for="fav_${realIndex}" style="flex:1;">${escapeHtml(fav)}</label>`;
+            div.onclick = (e) => { if(e.target.tagName !== 'INPUT') $(`fav_${realIndex}`).checked = !$(`fav_${realIndex}`).checked; };
+            listArea.appendChild(div);
+        });
+
+        // Favori arama
+        $('favSearchBar').oninput = function() {
+            favSearchQuery = this.value;
+            renderFavModal();
+        };
+        setTimeout(() => $('favSearchBar').focus(), 50);
+
+        $('addFavItem').onclick = openAddFavModal;
+        $('toggleFavDel').onclick = () => { favDeleteMode = !favDeleteMode; renderFavModal(); };
+
+        $('addSelectedToMain').onclick = () => {
+            const selectedIdx = []; 
+            favList.forEach((_, idx) => { 
+                const cb = $(`fav_${idx}`);
+                if(cb && cb.checked) selectedIdx.push(idx); 
+            });
+            if(favDeleteMode) { 
+                favList = favList.filter((_, idx) => !selectedIdx.includes(idx)); 
+                syncFavs(); 
+                renderFavModal(); 
+            } else { 
+                selectedIdx.forEach(idx => {
+                    const itemName = favList[idx];
+                    const alreadyExists = currentList.some(item => item.name === itemName);
+                    if(!alreadyExists) { currentList.push({name: itemName, price: 0}); }
+                });
+                sync(); 
+                closeGModal(); 
+            }
+        };
+        $('gModal').style.display = 'flex';
+    }
+
+    function openAddFavModal() {
+        const tempContent = $('mContent').innerHTML;
+        const tempClass = $('mContent').className;
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>FAVORİ EKLE</h3><input type="text" id="newFavName" placeholder="ÜRÜN ADI..." autofocus><div class="modal-btns"><button class="btn-ok" id="btnConfirmFav">EKLE</button><button class="btn-cancel" id="btnCancelFav">İPTAL</button></div>`;
+        const inp = $('newFavName');
+        const confirm = () => { const n = inp.value.trim().toUpperCase(); if(n) { favList.push(n); syncFavs(); } $('mContent').className = tempClass; renderFavModal(); };
+        $('btnConfirmFav').onclick = confirm;
+        inp.onkeydown = e => { if(e.key === 'Enter') confirm(); };
+        $('btnCancelFav').onclick = () => { $('mContent').className = tempClass; renderFavModal(); };
+        setTimeout(() => inp.focus(), 50);
+    }
+
+    $('clearListBtn').onclick = () => {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>LİSTE TEMİZLENSİN Mİ?</h3><p style="text-align:center; font-weight:800; color:var(--danger);">TÜM ÜRÜNLER SİLİNECEK!</p><div class="modal-btns"><button class="btn-ok" id="confirmClear" style="background:var(--danger);">SİL</button><button class="btn-cancel" onclick="closeGModal()">VAZGEÇ</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('confirmClear').onclick = () => { currentList = []; sync(); closeGModal(); };
+    };
+
+    $('mBulkList').onclick = () => {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content";
+        const names = currentList.map(x => x.name).join('\n');
+        $('mContent').innerHTML = `<h3>TOPLU LİSTE</h3><textarea id="bulkData" rows="12">${escapeHtml(names)}</textarea><div class="modal-btns"><button class="btn-ok" id="saveBulk">GÜNCELLE</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('saveBulk').onclick = () => { const lines = $('bulkData').value.split('\n'); currentList = lines.map(l => l.trim().toUpperCase()).filter(l => l).map(l => ({name: l, price: 0})); sync(); closeGModal(); };
+    };
+
+    $('delQuick').onclick = () => { 
+        deleteMode = true; 
+        selectedForDelete.clear(); 
+        $('deleteControls').style.display = 'flex'; 
+        $('mainWrapper').style.opacity = "0.7"; 
+        render(); 
+    };
+    $('cancelDel').onclick = () => { 
+        deleteMode = false; 
+        $('deleteControls').style.display = 'none'; 
+        $('mainWrapper').style.opacity = "1"; 
+        render(); 
+    };
+    $('confirmDel').onclick = () => { 
+        currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); 
+        deleteMode = false; 
+        $('deleteControls').style.display = 'none'; 
+        $('mainWrapper').style.opacity = "1"; 
+        sync(); 
+    };
+</script>
+</body>
+</html>
