@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <title>PRO LISTE V6.9 - STABLE GRID</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <style>
+        :root { 
+            --bg: rgba(255, 255, 245, 0.94); 
+            --card: rgba(255, 255, 245, 0.96); 
+            --accent: #1e3a8a; 
+            --success: #15803d; 
+            --danger: #dc3545; 
+            --text: #2c3e4e; 
+        }
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; 
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif; 
+            background-color: #faf3e0;
+            background-image: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 29px,
+                #e0d5bd 30px,
+                #e0d5bd 31px
+            );
+            color: var(--text); 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+            user-select: none; 
+            touch-action: pan-x pan-y; 
+        }
+        
+        .blur-target { 
+            transition: opacity 0.12s ease; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+        }
+        body.modal-open .blur-target { 
+            opacity: 0.4; 
+            pointer-events: none; 
+        }
+        
+        .top-fixed-bar { 
+            background: var(--bg); 
+            padding: 8px 10px; 
+            border-bottom: 2px solid #1e3a8a; 
+            z-index: 100; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+            flex-shrink: 0;
+        }
+        .header-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            gap: 4px; 
+            flex-wrap: wrap; 
+        }
+        .left-btns, .right-btns { 
+            display: flex; 
+            gap: 5px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+        }
+        
+        .circle-btn { 
+            width: 36px; 
+            height: 36px; 
+            border-radius: 9px; 
+            border: none; 
+            font-size: 17px; 
+            font-weight: bold; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
+            cursor: pointer;
+            transition: none;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            flex-shrink: 0;
+        }
+        .circle-btn:active { opacity: 0.8; }
+        .btn-star { background: #f59e0b; color: white; font-size: 18px; }
+        .btn-trash { background: #64748b; font-size: 18px; }
+        .btn-plus { background: var(--success); }
+        .btn-minus { background: #94a3b8; }
+        .btn-bulk { background: var(--accent); font-size: 12px; }
+
+        .search-bar {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 9px;
+            border: 1.5px solid #ddd2b6;
+            background: white;
+            font-size: 13px;
+            font-weight: 700;
+            outline: none;
+            font-family: inherit;
+            color: var(--text);
+            margin-top: 6px;
+            -webkit-appearance: none;
+        }
+        .search-bar:focus { border-color: var(--accent); }
+        .search-bar::placeholder { color: #94a3b8; font-weight: 500; }
+
+        .container { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            overflow-x: hidden;
+            padding: 6px; 
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            align-content: start;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .item-card-wrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+        }
+        .item-card { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 245, 0.98);
+            border-radius: 12px; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            padding: 6px 5px; 
+            border: 1px solid rgba(224, 213, 165, 0.5);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            transition: none;
+            cursor: pointer;
+            text-align: center;
+            word-break: break-word;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .item-card:active { opacity: 0.85; }
+        .item-card.has-price { background: var(--danger); border-color: var(--danger); }
+        .item-card.has-price .item-text, 
+        .item-card.has-price .item-price-tag { color: white; }
+        
+        .item-text { 
+            font-size: 14px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: var(--text); 
+            line-height: 1.2;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            width: 100%;
+        }
+        .item-price-tag { 
+            font-size: 14px; 
+            font-weight: 900; 
+            color: var(--accent); 
+            margin-top: 3px;
+        }
+        
+        .item-card.selected { 
+            border: 3px solid var(--accent); 
+        }
+        .item-card.selected::after { 
+            content: '✕'; 
+            position: absolute; 
+            top: 4px; 
+            right: 6px; 
+            color: var(--accent); 
+            font-size: 18px; 
+            font-weight: 900; 
+            line-height: 1;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 24px;
+            font-weight: 800;
+            color: #94a3b8;
+            font-size: 15px;
+            text-transform: uppercase;
+        }
+
+        .bottom-banner { 
+            background: rgba(255, 255, 245, 0.94);
+            border-top: 2px solid var(--accent); 
+            padding: 8px 14px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            box-shadow: 0 -1px 4px rgba(0,0,0,0.04); 
+            flex-shrink: 0;
+        }
+        #total-value-display { font-size: 22px; font-weight: 900; color: var(--text); }
+        .stats-mini { font-size: 11px; font-weight: 800; color: #64748b; text-align: right; }
+
+        .modal { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.45); 
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 2000; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        .modal-content { 
+            background: rgba(255, 255, 245, 0.99);
+            width: 92%; 
+            max-width: 450px; 
+            padding: 14px; 
+            border-radius: 18px; 
+            position: relative; 
+            height: 62vh; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.18);
+            border: 1px solid rgba(224, 213, 165, 0.5);
+        }
+        .modal-content.small-modal { height: auto; max-height: 78vh; }
+        .fav-list-area { 
+            overflow-y: auto; 
+            flex-grow: 1; 
+            margin: 6px 0; 
+            border: 1px solid #ddd2b6; 
+            border-radius: 12px; 
+            background: rgba(255,255,245,0.8); 
+            -webkit-overflow-scrolling: touch;
+        }
+        .fav-row { 
+            display: flex; 
+            align-items: center; 
+            padding: 5px 8px; 
+            border-bottom: 1px solid #e0d5bd; 
+            gap: 8px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: var(--text); 
+            font-size: 13px;
+            -webkit-tap-highlight-color: transparent;
+            cursor: pointer;
+            min-height: 38px;
+        }
+
+        .custom-checkbox {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            border-radius: 5px;
+            border: 2px solid #c0b89a;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: none;
+        }
+        .custom-checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+        .custom-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 15px;
+            font-weight: 900;
+            line-height: 1;
+            position: absolute;
+        }
+        .fav-row label { 
+            flex: 1; 
+            cursor: pointer; 
+            font-size: 13px;
+        }
+
+        .fav-search-bar {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 9px;
+            border: 1.5px solid #ddd2b6;
+            background: white;
+            font-size: 13px;
+            font-weight: 700;
+            outline: none;
+            font-family: inherit;
+            color: var(--text);
+            margin-bottom: 5px;
+            -webkit-appearance: none;
+            flex-shrink: 0;
+        }
+        .fav-search-bar:focus { border-color: var(--accent); }
+        .fav-search-bar::placeholder { color: #94a3b8; font-weight: 500; }
+
+        input, textarea { 
+            width: 100%; 
+            padding: 11px 12px; 
+            margin: 5px 0; 
+            background: white; 
+            border: 1.5px solid #ddd2b6; 
+            border-radius: 12px; 
+            font-size: 14px; 
+            font-weight: bold; 
+            outline: none;
+            font-family: inherit;
+            -webkit-appearance: none;
+        }
+        input:focus, textarea:focus { border-color: var(--accent); }
+        .modal-btns { display: flex; gap: 5px; margin-top: auto; padding-top: 6px; flex-shrink: 0; }
+        .modal-btns button { 
+            flex: 1; 
+            padding: 11px; 
+            border-radius: 18px; 
+            border: none; 
+            font-weight: 900; 
+            cursor: pointer; 
+            font-size: 13px; 
+            transition: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .modal-btns button:active { opacity: 0.8; }
+        .btn-ok { background: var(--accent); color: white; }
+        .btn-cancel { background: #e2e8f0; color: #64748b; }
+
+        .floating-confirm { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 0; 
+            width: 100%; 
+            display: none; 
+            justify-content: center; 
+            gap: 14px; 
+            z-index: 1500; 
+        }
+        .floating-confirm .circle-btn {
+            width: 54px;
+            height: 54px;
+            border-radius: 26px;
+            font-size: 24px;
+        }
+        #loading-screen { 
+            position: fixed; 
+            top:0; 
+            left:0; 
+            width:100%; 
+            height:100%; 
+            background: #faf3e0;
+            background-image: repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent 29px,
+                #e0d5bd 30px,
+                #e0d5bd 31px
+            );
+            z-index:9999; 
+            display:flex; 
+            justify-content:center; 
+            align-items:center; 
+            color: var(--accent); 
+            font-size: 19px; 
+            font-weight:900; 
+        }
+        
+        h3 { color: var(--accent); margin: 0 0 8px 0; font-size: 17px; flex-shrink: 0; }
+        p { color: var(--text); margin: 5px 0; }
+
+        .container::-webkit-scrollbar,
+        .fav-list-area::-webkit-scrollbar { width: 3px; }
+        .container::-webkit-scrollbar-thumb,
+        .fav-list-area::-webkit-scrollbar-thumb { background: #ddd2b6; border-radius: 3px; }
+
+        /* --- YENİ EKLENEN STİLLER --- */
+        .num-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin: 5px 0 8px 0;
+        }
+        .num-pad button {
+            padding: 14px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 900;
+            background: #f1efe8;
+            color: var(--text);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .num-pad button:active { background: #ddd2b6; transform: scale(0.95); }
+        .num-pad .del-btn { background: #e2e8f0; color: #64748b; font-size: 16px; }
+
+        .fav-suggestions {
+            max-height: 120px;
+            overflow-y: auto;
+            border: 1px solid #ddd2b6;
+            border-radius: 10px;
+            background: white;
+            margin-top: -3px;
+            margin-bottom: 6px;
+            display: none;
+        }
+        .fav-suggestions .sug-item {
+            padding: 8px 12px;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #f0ebe0;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .fav-suggestions .sug-item:active { background: #e0d5bd; }
+        .fav-suggestions .sug-item:last-child { border-bottom: none; }
+        .fav-suggestions .no-sug { padding: 10px; text-align: center; color: #94a3b8; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div id="loading-screen">YÜKLENİYOR...</div>
+
+<div class="blur-target" id="mainWrapper">
+    <div class="top-fixed-bar">
+        <div class="header-row">
+            <div class="left-btns">
+                <button class="circle-btn btn-trash" id="clearListBtn">🗑️</button>
+                <button class="circle-btn btn-star" id="openFavs">⭐</button>
+            </div>
+            <div class="right-btns">
+                <button class="circle-btn btn-bulk" id="mBulkList">+++</button>
+                <button class="circle-btn btn-plus" id="addQuick">+</button>
+                <button class="circle-btn btn-minus" id="delQuick">-</button>
+            </div>
+        </div>
+        <input type="text" class="search-bar" id="mainSearchBar" placeholder="🔍 ÜRÜN ARA...">
+    </div>
+
+    <div class="container" id="mainGrid"></div>
+
+    <div class="bottom-banner">
+        <div class="total-box" onclick="openBudgetModal()">
+            <div style="font-size: 10px; font-weight: 800; color: #64748b;">TOPLAM TUTAR</div>
+            <div id="total-value-display">0.00 TL</div>
+        </div>
+        <div class="stats-mini">
+            <div>TOPLAM ÜRÜN</div>
+            <div style="font-size: 15px; color: var(--text);" id="total-items-count">0</div>
+        </div>
+    </div>
+</div>
+
+<div class="floating-confirm" id="deleteControls">
+    <button class="circle-btn" id="confirmDel" style="background:var(--success);">✓</button>
+    <button class="circle-btn" id="cancelDel" style="background:var(--danger);">✕</button>
+</div>
+
+<div id="gModal" class="modal">
+    <div class="modal-content" id="mContent"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('PWA AKTİF')).catch(err => console.log('PWA HATASI'));
+        });
+    }
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyA9whlWMrlyF6GMnWBK7SQA76qNFpO7RkQ",
+        authDomain: "market-listesi-d9338.firebaseapp.com",
+        projectId: "market-listesi-d9338",
+        storageBucket: "market-listesi-d9338.firebasestorage.app",
+        messagingSenderId: "91497340883",
+        appId: "1:91497340883:web:6e9280b4a70d0a6f38d926",
+        databaseURL: "https://market-listesi-d9338-default-rtdb.firebaseio.com"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentList = [];
+    let favList = [];
+    let userBudget = 0;
+    let isReady = false;
+    let deleteMode = false;
+    let selectedForDelete = new Set();
+    let favDeleteMode = false;
+    let searchQuery = '';
+    let favSearchQuery = '';
+    let selectedFavs = new Set();
+    let favListScrollPos = 0;
+
+    const $ = id => document.getElementById(id);
+
+    db.ref('v5_app_state/current').on('value', snap => {
+        const cloud = snap.val();
+        if(cloud) { currentList = cloud.data || []; userBudget = cloud.budget || 0; }
+        isReady = true; $('loading-screen').style.display = 'none'; render();
+    });
+
+    db.ref('v5_app_state/favorites').on('value', snap => { favList = snap.val() || []; });
+
+    function sync() { if(!isReady) return; db.ref('v5_app_state/current').set({id: Date.now(), data: currentList, budget: userBudget}); }
+    function syncFavs() { db.ref('v5_app_state/favorites').set(favList); }
+
+    function getFilteredList() {
+        if(!searchQuery) return currentList;
+        const q = searchQuery.toUpperCase();
+        return currentList.filter(item => item.name.toUpperCase().includes(q));
+    }
+
+    function render() {
+        const grid = $('mainGrid'); 
+        grid.innerHTML = ''; 
+        
+        const filteredList = getFilteredList();
+        
+        if(filteredList.length === 0 && searchQuery) {
+            const noRes = document.createElement('div');
+            noRes.className = 'no-results';
+            noRes.textContent = '🔍 SONUÇ BULUNAMADI';
+            grid.appendChild(noRes);
+        }
+        
+        filteredList.forEach((item) => {
+            const realIndex = currentList.indexOf(item);
+            const wrapper = document.createElement('div');
+            wrapper.className = 'item-card-wrapper';
+            
+            const card = document.createElement('div');
+            card.className = `item-card ${item.price > 0 ? 'has-price' : ''} ${deleteMode && selectedForDelete.has(realIndex) ? 'selected' : ''}`;
+            card.innerHTML = `<div class="item-text">${escapeHtml(item.name)}</div><div class="item-price-tag">${item.price > 0 ? item.price + ' TL' : ''}</div>`;
+            card.onclick = () => { 
+                if(deleteMode) { 
+                    if(selectedForDelete.has(realIndex)) selectedForDelete.delete(realIndex); 
+                    else selectedForDelete.add(realIndex); 
+                    render(); 
+                } else openEditModal(realIndex); 
+            };
+            
+            wrapper.appendChild(card);
+            grid.appendChild(wrapper); 
+        });
+        
+        let fullTotal = 0;
+        currentList.forEach(item => { if(item.price > 0) fullTotal += parseFloat(item.price); });
+        
+        $('total-value-display').innerText = fullTotal.toFixed(2) + ' TL';
+        $('total-items-count').innerText = currentList.length;
+    }
+    
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
+
+    function closeGModal() { 
+        $('gModal').style.display='none'; 
+        document.body.classList.remove('modal-open'); 
+    }
+
+    $('mainSearchBar').oninput = function() {
+        searchQuery = this.value;
+        render();
+    };
+
+    $('addQuick').onclick = () => {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3>
+            <input type="text" id="inName" placeholder="ÜRÜN ADI...">
+            <div class="fav-suggestions" id="suggestionBox"></div>
+            <div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        const inp = $('inName');
+        const sugBox = $('suggestionBox');
+        
+        const updateSuggestions = () => {
+            const val = inp.value.trim().toUpperCase();
+            if(val.length === 0 || favList.length === 0) { sugBox.style.display = 'none'; return; }
+            const matches = favList.filter(f => f.toUpperCase().includes(val));
+            if(matches.length === 0) { sugBox.style.display = 'none'; return; }
+            sugBox.style.display = 'block';
+            sugBox.innerHTML = matches.map(m => `<div class="sug-item" data-name="${escapeHtml(m)}">${escapeHtml(m)}</div>`).join('');
+            sugBox.querySelectorAll('.sug-item').forEach(el => {
+                el.onclick = () => {
+                    inp.value = el.dataset.name;
+                    sugBox.style.display = 'none';
+                };
+            });
+        };
+        inp.oninput = updateSuggestions;
+        inp.onfocus = updateSuggestions;
+        inp.onblur = () => setTimeout(() => { sugBox.style.display = 'none'; }, 200);
+        
+        const save = () => { const n = inp.value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); sync(); } closeGModal(); };
+        $('btnSaveAdd').onclick = save;
+        inp.onkeydown = e => { if(e.key === 'Enter') save(); };
+    };
+
+    function openEditModal(i) {
+        document.body.classList.add('modal-open');
+        const item = currentList[i];
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>DÜZENLE</h3>
+            <input type="text" id="edName" value="${escapeHtml(item.name)}">
+            <input type="text" id="edPrice" value="${item.price || ''}" readonly placeholder="FİYAT (TL)">
+            <div class="num-pad">
+                <button data-val="1">1</button><button data-val="2">2</button><button data-val="3">3</button>
+                <button data-val="4">4</button><button data-val="5">5</button><button data-val="6">6</button>
+                <button data-val="7">7</button><button data-val="8">8</button><button data-val="9">9</button>
+                <button data-val=".">.</button><button data-val="0">0</button><button class="del-btn" data-val="DEL">⌫</button>
+            </div>
+            <div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        const nameInp = $('edName');
+        const priceInp = $('edPrice');
+        
+        const updatePrice = (val) => {
+            if(val === 'DEL') {
+                priceInp.value = priceInp.value.slice(0, -1);
+            } else {
+                if(priceInp.value.includes('.') && val === '.') return;
+                priceInp.value += val;
+            }
+        };
+        
+        document.querySelectorAll('.num-pad button').forEach(btn => {
+            btn.onclick = () => updatePrice(btn.dataset.val);
+        });
+        
+        const save = () => { 
+            currentList[i].name = nameInp.value.trim().toUpperCase(); 
+            currentList[i].price = parseFloat(priceInp.value) || 0; 
+            sync(); 
+            closeGModal(); 
+        };
+        $('btnSaveEdit').onclick = save;
+        nameInp.onkeydown = e => { if(e.key === 'Enter') save(); };
+    }
+
+    window.openBudgetModal = function() {
+        document.body.classList.add('modal-open');
+        const currentTotal = parseFloat($('total-value-display').innerText);
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>BAKİYE HESABI</h3><input type="number" id="budgetInput" placeholder="CEBİNDEKİ PARA" value="${userBudget || ''}"><div id="resultCalc" style="text-align:center; font-weight:900; font-size:18px; margin:6px 0;"></div><div class="modal-btns"><button class="btn-ok" id="btnSaveBudget">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">KAPAT</button></div>`;
+        $('gModal').style.display = 'flex';
+        const bInp = $('budgetInput');
+        const update = () => { const b = parseFloat(bInp.value) || 0; const k = b - currentTotal; $('resultCalc').innerText = `KALAN: ${k.toFixed(2)} TL`; $('resultCalc').style.color = k < 0 ? 'var(--danger)' : '#15803d'; };
+        bInp.oninput = update;
+        bInp.onkeydown = e => { if(e.key === 'Enter') { userBudget = parseFloat(bInp.value) || 0; sync(); closeGModal(); } };
+        update();
+        $('btnSaveBudget').onclick = () => { userBudget = parseFloat(bInp.value) || 0; sync(); closeGModal(); };
+    };
+
+    $('openFavs').onclick = () => { 
+        favDeleteMode = false; 
+        favSearchQuery = ''; 
+        selectedFavs.clear();
+        favListScrollPos = 0;
+        
+        currentList.forEach(item => {
+            const favIndex = favList.indexOf(item.name);
+            if(favIndex !== -1) {
+                selectedFavs.add(favIndex);
+            }
+        });
+        
+        renderFavModal(); 
+    };
+
+    function getFilteredFavs() {
+        if(!favSearchQuery) return favList;
+        const q = favSearchQuery.toUpperCase();
+        return favList.filter(fav => fav.toUpperCase().includes(q));
+    }
+
+    function renderFavModal() {
+        const listAreaOld = $('favListItems');
+        if(listAreaOld) {
+            favListScrollPos = listAreaOld.scrollTop;
+        }
+        
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content";
+        $('mContent').innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
+                <h3 style="margin:0; font-size:16px;">FAVORİLER</h3>
+                <div style="display:flex; gap:5px;">
+                    <button class="circle-btn btn-plus" id="addFavItem" style="width:32px; height:32px;">+</button>
+                    <button class="circle-btn btn-minus" id="toggleFavDel" style="width:32px; height:32px; background:${favDeleteMode?'var(--danger)':'#94a3b8'}">-</button>
+                </div>
+            </div>
+            <input type="text" class="fav-search-bar" id="favSearchBar" placeholder="🔍 FAVORİ ARA...">
+            <div class="fav-list-area" id="favListItems"></div>
+            <div class="modal-btns">
+                <button class="btn-ok" id="addSelectedToMain">${favDeleteMode ? 'SEÇİLENLERİ SİL' : 'ANA LİSTEYE EKLE'}</button>
+                <button class="btn-cancel" onclick="closeGModal()">KAPAT</button>
+            </div>`;
+        
+        const listArea = $('favListItems');
+        const renderList = () => {
+            listArea.innerHTML = '';
+            const filteredFavs = getFilteredFavs();
+            
+            if(filteredFavs.length === 0 && favSearchQuery) {
+                const noRes = document.createElement('div');
+                noRes.style.cssText = 'text-align:center; padding:18px; font-weight:800; color:#94a3b8; font-size:12px; text-transform:uppercase;';
+                noRes.textContent = '🔍 SONUÇ BULUNAMADI';
+                listArea.appendChild(noRes);
+            }
+            
+            filteredFavs.forEach(fav => {
+                const realIndex = favList.indexOf(fav);
+                const isChecked = selectedFavs.has(realIndex);
+                
+                const div = document.createElement('div'); 
+                div.className = 'fav-row';
+                div.innerHTML = `
+                    <div class="custom-checkbox ${isChecked ? 'checked' : ''}" data-index="${realIndex}"></div>
+                    <label>${escapeHtml(fav)}</label>`;
+                
+                div.onclick = function(e) {
+                    if(selectedFavs.has(realIndex)) {
+                        selectedFavs.delete(realIndex);
+                    } else {
+                        selectedFavs.add(realIndex);
+                    }
+                    const cb = div.querySelector('.custom-checkbox');
+                    if(selectedFavs.has(realIndex)) {
+                        cb.classList.add('checked');
+                    } else {
+                        cb.classList.remove('checked');
+                    }
+                };
+                
+                listArea.appendChild(div);
+            });
+        };
+        renderList();
+
+        setTimeout(() => {
+            $('favListItems').scrollTop = favListScrollPos;
+        }, 0);
+
+        const favSearchInput = $('favSearchBar');
+        favSearchInput.oninput = function() {
+            favSearchQuery = this.value;
+            favListScrollPos = 0;
+            // Sadece listeyi yeniden çiz, modalı değil
+            renderList();
+        };
+
+        $('addFavItem').onclick = openAddFavModal;
+        $('toggleFavDel').onclick = () => { 
+            favDeleteMode = !favDeleteMode; 
+            selectedFavs.clear();
+            favListScrollPos = 0;
+            // Sadece listeyi yeniden çiz
+            renderList();
+        };
+
+        $('addSelectedToMain').onclick = () => {
+            const selectedIdx = Array.from(selectedFavs);
+            if(favDeleteMode) { 
+                favList = favList.filter((_, idx) => !selectedIdx.includes(idx)); 
+                selectedFavs.clear();
+                favListScrollPos = 0;
+                syncFavs(); 
+                renderList();
+            } else { 
+                selectedIdx.forEach(idx => {
+                    const itemName = favList[idx];
+                    const alreadyExists = currentList.some(item => item.name === itemName);
+                    if(!alreadyExists) { currentList.push({name: itemName, price: 0}); }
+                });
+                sync(); 
+                closeGModal(); 
+            }
+        };
+        $('gModal').style.display = 'flex';
+    }
+
+    function openAddFavModal() {
+        const tempClass = $('mContent').className;
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>FAVORİ EKLE</h3><input type="text" id="newFavName" placeholder="ÜRÜN ADI..."><div class="modal-btns"><button class="btn-ok" id="btnConfirmFav">EKLE</button><button class="btn-cancel" id="btnCancelFav">İPTAL</button></div>`;
+        const inp = $('newFavName');
+        const confirm = () => { const n = inp.value.trim().toUpperCase(); if(n) { favList.push(n); syncFavs(); } $('mContent').className = tempClass; renderFavModal(); };
+        $('btnConfirmFav').onclick = confirm;
+        inp.onkeydown = e => { if(e.key === 'Enter') confirm(); };
+        $('btnCancelFav').onclick = () => { $('mContent').className = tempClass; renderFavModal(); };
+    }
+
+    $('clearListBtn').onclick = () => {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>LİSTE TEMİZLENSİN Mİ?</h3><p style="text-align:center; font-weight:800; color:var(--danger);">TÜM ÜRÜNLER SİLİNECEK!</p><div class="modal-btns"><button class="btn-ok" id="confirmClear" style="background:var(--danger);">SİL</button><button class="btn-cancel" onclick="closeGModal()">VAZGEÇ</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('confirmClear').onclick = () => { currentList = []; sync(); closeGModal(); };
+    };
+
+    $('mBulkList').onclick = () => {
+        document.body.classList.add('modal-open');
+        $('mContent').className = "modal-content";
+        const names = currentList.map(x => x.name).join('\n');
+        $('mContent').innerHTML = `<h3>TOPLU LİSTE</h3><textarea id="bulkData" rows="12">${escapeHtml(names)}</textarea><div class="modal-btns"><button class="btn-ok" id="saveBulk">GÜNCELLE</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        $('saveBulk').onclick = () => { const lines = $('bulkData').value.split('\n'); currentList = lines.map(l => l.trim().toUpperCase()).filter(l => l).map(l => ({name: l, price: 0})); sync(); closeGModal(); };
+    };
+
+    $('delQuick').onclick = () => { 
+        deleteMode = true; 
+        selectedForDelete.clear(); 
+        $('deleteControls').style.display = 'flex'; 
+        $('mainWrapper').style.opacity = "0.7"; 
+        render(); 
+    };
+    $('cancelDel').onclick = () => { 
+        deleteMode = false; 
+        $('deleteControls').style.display = 'none'; 
+        $('mainWrapper').style.opacity = "1"; 
+        render(); 
+    };
+    $('confirmDel').onclick = () => { 
+        currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); 
+        deleteMode = false; 
+        $('deleteControls').style.display = 'none'; 
+        $('mainWrapper').style.opacity = "1"; 
+        sync(); 
+    };
+</script>
+</body>
+</html>
