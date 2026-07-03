@@ -14,25 +14,20 @@
     
     <style>
         :root { 
-            --bg: rgba(255, 255, 245, 0.94); 
-            --card: rgba(255, 255, 245, 0.96); 
+            --bg: #ffffff; 
+            --card: #ffffff; 
             --accent: #1e3a8a; 
             --success: #15803d; 
             --danger: #dc3545; 
             --text: #2c3e4e; 
+            --shadow-light: rgba(0,0,0,0.08);
+            --shadow-dark: rgba(0,0,0,0.15);
         }
         * { box-sizing: border-box; }
         body { 
             margin: 0; 
             font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, 'Roboto', sans-serif; 
-            background-color: #faf3e0;
-            background-image: repeating-linear-gradient(
-                to bottom,
-                transparent,
-                transparent 29px,
-                #e0d5bd 30px,
-                #e0d5bd 31px
-            );
+            background-color: var(--bg); 
             color: var(--text); 
             display: flex; 
             flex-direction: column; 
@@ -104,7 +99,7 @@
             width: 100%;
             padding: 7px 10px;
             border-radius: 9px;
-            border: 1.5px solid #ddd2b6;
+            border: 1.5px solid #d1d5db;
             background: white;
             font-size: 13px;
             font-weight: 700;
@@ -121,80 +116,124 @@
             flex-grow: 1; 
             overflow-y: auto; 
             overflow-x: hidden;
-            padding: 6px; 
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
-            align-content: start;
+            padding: 8px 12px; 
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             -webkit-overflow-scrolling: touch;
         }
         
         .item-card-wrapper {
+            width: 100%;
             position: relative;
-            width: 100%;
-            padding-bottom: 100%;
         }
-        .item-card { 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 245, 0.98);
-            border-radius: 12px; 
-            display: flex; 
-            flex-direction: column;
-            justify-content: center; 
-            align-items: center; 
-            padding: 6px 5px; 
-            border: 1px solid rgba(224, 213, 165, 0.5);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            transition: none;
-            cursor: pointer;
-            text-align: center;
-            word-break: break-word;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .item-card:active { opacity: 0.85; }
-        .item-card.has-price { background: var(--danger); border-color: var(--danger); }
-        .item-card.has-price .item-text, 
-        .item-card.has-price .item-price-tag { color: white; }
         
-        .item-text { 
-            font-size: 14px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            color: var(--text); 
-            line-height: 1.2;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .item-card { 
             width: 100%;
+            display: flex;
+            background: #f0f0f0; /* Açık gri */
+            border-radius: 6px;
+            border: 2px solid #ffffff;
+            border-right-color: #a0a0a0;
+            border-bottom-color: #a0a0a0;
+            box-shadow: 
+                inset 1px 1px 0px #ffffff,
+                inset -1px -1px 0px #a0a0a0;
+            transition: all 0.05s ease;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            height: 52px;
+            align-items: stretch;
+            overflow: hidden;
+            margin-bottom: 6px;
         }
-        .item-price-tag { 
-            font-size: 14px; 
-            font-weight: 900; 
-            color: var(--accent); 
-            margin-top: 3px;
+        
+        .item-name-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #000000;
+            border-right: 2px solid #ffffff;
+            border-right-color: #a0a0a0;
+            background: #f0f0f0;
+            text-transform: uppercase;
+            word-break: break-word;
+        }
+        
+        .item-price-area {
+            width: 85px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 900;
+            padding: 0 8px;
+            border-left: 2px solid #ffffff;
+            transition: all 0.05s ease;
+        }
+        
+        /* Fiyat yok (0 TL) - YEŞİL ve KABARTMALI (Yukarı kalkık) */
+        .item-card.price-zero .item-price-area {
+            background: #15803d;
+            color: white;
+            border-left-color: #4ade80;
+            border-right: 2px solid #0f5a2a;
+            border-bottom: 2px solid #0f5a2a;
+            box-shadow: 
+                inset 2px 2px 0px #4ade80,
+                inset -2px -2px 0px #0f5a2a;
+        }
+        .item-card.price-zero {
+            border: 2px solid #ffffff;
+            border-right-color: #a0a0a0;
+            border-bottom-color: #a0a0a0;
+            box-shadow: 
+                inset 2px 2px 0px #ffffff,
+                inset -2px -2px 0px #a0a0a0;
+        }
+        
+        /* Fiyat var - KIRMIZI ve BASILMIŞ (İçe çökük) */
+        .item-card.price-set .item-price-area {
+            background: #dc3545;
+            color: white;
+            border-left-color: #b02a37;
+            border-right: 2px solid #f8d7da;
+            border-bottom: 2px solid #f8d7da;
+            box-shadow: 
+                inset -2px -2px 0px #b02a37,
+                inset 2px 2px 0px #f8d7da;
+        }
+        .item-card.price-set {
+            border: 2px solid #a0a0a0;
+            border-right-color: #ffffff;
+            border-bottom-color: #ffffff;
+            box-shadow: 
+                inset -2px -2px 0px #a0a0a0,
+                inset 2px 2px 0px #ffffff;
         }
         
         .item-card.selected { 
-            border: 3px solid var(--accent); 
+            border: 2px solid var(--accent); 
         }
         .item-card.selected::after { 
             content: '✕'; 
             position: absolute; 
-            top: 4px; 
-            right: 6px; 
+            top: -2px; 
+            right: 80px; 
             color: var(--accent); 
             font-size: 18px; 
             font-weight: 900; 
             line-height: 1;
+            background: white;
+            padding: 0 4px;
+            border-radius: 4px;
         }
 
         .no-results {
-            grid-column: 1 / -1;
             text-align: center;
             padding: 24px;
             font-weight: 800;
@@ -204,7 +243,7 @@
         }
 
         .bottom-banner { 
-            background: rgba(255, 255, 245, 0.94);
+            background: #ffffff;
             border-top: 2px solid var(--accent); 
             padding: 8px 14px; 
             display: flex; 
@@ -212,9 +251,52 @@
             align-items: center; 
             box-shadow: 0 -1px 4px rgba(0,0,0,0.04); 
             flex-shrink: 0;
+            position: relative;
         }
-        #total-value-display { font-size: 22px; font-weight: 900; color: var(--text); }
-        .stats-mini { font-size: 11px; font-weight: 800; color: #64748b; text-align: right; }
+        .bottom-banner::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 6px;
+            bottom: 6px;
+            width: 2px;
+            background: #d1d5db;
+            transform: translateX(-50%);
+        }
+        .total-box { 
+            flex: 1;
+            text-align: center;
+            padding-right: 4px;
+        }
+        .stats-mini { 
+            flex: 1;
+            text-align: center;
+            padding-left: 4px;
+        }
+        #total-value-display { 
+            font-size: 22px; 
+            font-weight: 900; 
+            transition: background 0.3s, color 0.3s;
+            border-radius: 8px;
+            padding: 2px 10px;
+            display: inline-block;
+        }
+        
+        /* Bakiye durum renkleri */
+        .total-green { color: #15803d; background: #dcfce7; }
+        .total-red { color: #dc3545; background: #fee2e2; }
+        .total-yellow { color: #b45309; background: #fef9c3; }
+        
+        .blink-red {
+            animation: blinkWarning 1.2s infinite;
+        }
+        @keyframes blinkWarning {
+            0%, 100% { background: #fee2e2; color: #dc3545; }
+            50% { background: #ffffff; color: #dc3545; }
+        }
+
+        .stats-mini div { font-size: 11px; font-weight: 800; color: #64748b; }
+        .stats-mini div:last-child { font-size: 15px; color: var(--text); }
 
         .modal { 
             position: fixed; 
@@ -230,33 +312,32 @@
             -webkit-tap-highlight-color: transparent;
         }
         .modal-content { 
-            background: rgba(255, 255, 245, 0.99);
+            background: #ffffff;
             width: 92%; 
             max-width: 450px; 
             padding: 14px; 
             border-radius: 18px; 
             position: relative; 
-            height: 62vh; 
             display: flex; 
             flex-direction: column; 
             box-shadow: 0 10px 20px rgba(0,0,0,0.18);
-            border: 1px solid rgba(224, 213, 165, 0.5);
+            border: 1px solid #e5e7eb;
         }
         .modal-content.small-modal { height: auto; max-height: 78vh; }
         .fav-list-area { 
             overflow-y: auto; 
             flex-grow: 1; 
             margin: 6px 0; 
-            border: 1px solid #ddd2b6; 
+            border: 1px solid #d1d5db; 
             border-radius: 12px; 
-            background: rgba(255,255,245,0.8); 
+            background: #ffffff; 
             -webkit-overflow-scrolling: touch;
         }
         .fav-row { 
             display: flex; 
             align-items: center; 
             padding: 5px 8px; 
-            border-bottom: 1px solid #e0d5bd; 
+            border-bottom: 1px solid #e5e7eb; 
             gap: 8px; 
             font-weight: 800; 
             text-transform: uppercase; 
@@ -303,7 +384,7 @@
             width: 100%;
             padding: 7px 10px;
             border-radius: 9px;
-            border: 1.5px solid #ddd2b6;
+            border: 1.5px solid #d1d5db;
             background: white;
             font-size: 13px;
             font-weight: 700;
@@ -317,12 +398,12 @@
         .fav-search-bar:focus { border-color: var(--accent); }
         .fav-search-bar::placeholder { color: #94a3b8; font-weight: 500; }
 
-        input, textarea { 
+        input[type="text"], input[type="number"], textarea { 
             width: 100%; 
             padding: 11px 12px; 
             margin: 5px 0; 
             background: white; 
-            border: 1.5px solid #ddd2b6; 
+            border: 1.5px solid #d1d5db; 
             border-radius: 12px; 
             font-size: 14px; 
             font-weight: bold; 
@@ -369,14 +450,7 @@
             left:0; 
             width:100%; 
             height:100%; 
-            background: #faf3e0;
-            background-image: repeating-linear-gradient(
-                to bottom,
-                transparent,
-                transparent 29px,
-                #e0d5bd 30px,
-                #e0d5bd 31px
-            );
+            background: #ffffff;
             z-index:9999; 
             display:flex; 
             justify-content:center; 
@@ -392,9 +466,9 @@
         .container::-webkit-scrollbar,
         .fav-list-area::-webkit-scrollbar { width: 3px; }
         .container::-webkit-scrollbar-thumb,
-        .fav-list-area::-webkit-scrollbar-thumb { background: #ddd2b6; border-radius: 3px; }
+        .fav-list-area::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 
-        /* --- YENİ EKLENEN STİLLER --- */
+        /* --- RAKAM BUTONLARI --- */
         .num-pad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -407,19 +481,19 @@
             border-radius: 12px;
             font-size: 20px;
             font-weight: 900;
-            background: #f1efe8;
+            background: #f3f4f6;
             color: var(--text);
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .num-pad button:active { background: #ddd2b6; transform: scale(0.95); }
+        .num-pad button:active { background: #e5e7eb; transform: scale(0.95); }
         .num-pad .del-btn { background: #e2e8f0; color: #64748b; font-size: 16px; }
 
         .fav-suggestions {
             max-height: 120px;
             overflow-y: auto;
-            border: 1px solid #ddd2b6;
+            border: 1px solid #d1d5db;
             border-radius: 10px;
             background: white;
             margin-top: -3px;
@@ -431,11 +505,11 @@
             font-weight: 700;
             font-size: 13px;
             text-transform: uppercase;
-            border-bottom: 1px solid #f0ebe0;
+            border-bottom: 1px solid #f3f4f6;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
-        .fav-suggestions .sug-item:active { background: #e0d5bd; }
+        .fav-suggestions .sug-item:active { background: #e5e7eb; }
         .fav-suggestions .sug-item:last-child { border-bottom: none; }
         .fav-suggestions .no-sug { padding: 10px; text-align: center; color: #94a3b8; font-weight: 600; }
     </style>
@@ -557,25 +631,80 @@
             wrapper.className = 'item-card-wrapper';
             
             const card = document.createElement('div');
-            card.className = `item-card ${item.price > 0 ? 'has-price' : ''} ${deleteMode && selectedForDelete.has(realIndex) ? 'selected' : ''}`;
-            card.innerHTML = `<div class="item-text">${escapeHtml(item.name)}</div><div class="item-price-tag">${item.price > 0 ? item.price + ' TL' : ''}</div>`;
-            card.onclick = () => { 
+            const isZero = item.price <= 0;
+            card.className = `item-card ${isZero ? 'price-zero' : 'price-set'} ${deleteMode && selectedForDelete.has(realIndex) ? 'selected' : ''}`;
+            
+            const nameArea = document.createElement('div');
+            nameArea.className = 'item-name-area';
+            nameArea.textContent = item.name;
+            
+            const priceArea = document.createElement('div');
+            priceArea.className = 'item-price-area';
+            priceArea.textContent = isZero ? '0 TL' : item.price + ' TL';
+            
+            card.appendChild(nameArea);
+            card.appendChild(priceArea);
+            
+            // Tıklama olayları
+            nameArea.onclick = (e) => { 
+                e.stopPropagation();
                 if(deleteMode) { 
                     if(selectedForDelete.has(realIndex)) selectedForDelete.delete(realIndex); 
                     else selectedForDelete.add(realIndex); 
                     render(); 
-                } else openEditModal(realIndex); 
+                } else openEditNameModal(realIndex); 
+            };
+            
+            priceArea.onclick = (e) => { 
+                e.stopPropagation();
+                if(deleteMode) { 
+                    if(selectedForDelete.has(realIndex)) selectedForDelete.delete(realIndex); 
+                    else selectedForDelete.add(realIndex); 
+                    render(); 
+                } else openPriceModal(realIndex); 
+            };
+            
+            // Ana kartın boş kısmına tıklayınca isim düzenleme (opsiyonel)
+            card.onclick = (e) => {
+                if(e.target === card) {
+                    if(deleteMode) { 
+                        if(selectedForDelete.has(realIndex)) selectedForDelete.delete(realIndex); 
+                        else selectedForDelete.add(realIndex); 
+                        render(); 
+                    } else openEditNameModal(realIndex);
+                }
             };
             
             wrapper.appendChild(card);
             grid.appendChild(wrapper); 
         });
         
+        updateTotalAndBudget();
+    }
+    
+    function updateTotalAndBudget() {
         let fullTotal = 0;
         currentList.forEach(item => { if(item.price > 0) fullTotal += parseFloat(item.price); });
         
-        $('total-value-display').innerText = fullTotal.toFixed(2) + ' TL';
+        const display = $('total-value-display');
+        display.innerText = fullTotal.toFixed(2) + ' TL';
         $('total-items-count').innerText = currentList.length;
+        
+        // Bakiye ve renk kontrolü
+        display.className = '';
+        display.style.animation = 'none';
+        
+        if(userBudget > 0) {
+            if(fullTotal > userBudget) {
+                display.className = 'total-red blink-red';
+            } else if(fullTotal >= userBudget * 0.8) {
+                display.className = 'total-yellow';
+            } else {
+                display.className = 'total-green';
+            }
+        } else {
+            display.className = '';
+        }
     }
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m])); }
@@ -594,7 +723,7 @@
         document.body.classList.add('modal-open');
         $('mContent').className = "modal-content small-modal";
         $('mContent').innerHTML = `<h3>YENİ ÜRÜN</h3>
-            <input type="text" id="inName" placeholder="ÜRÜN ADI...">
+            <input type="text" id="inName" placeholder="ÜRÜN ADI..." autofocus>
             <div class="fav-suggestions" id="suggestionBox"></div>
             <div class="modal-btns"><button class="btn-ok" id="btnSaveAdd">EKLE</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
@@ -624,12 +753,34 @@
         inp.onkeydown = e => { if(e.key === 'Enter') save(); };
     };
 
-    function openEditModal(i) {
+    // YENİ: Sadece isim düzenleme modalı (klavye açılmaz)
+    function openEditNameModal(i) {
         document.body.classList.add('modal-open');
         const item = currentList[i];
         $('mContent').className = "modal-content small-modal";
-        $('mContent').innerHTML = `<h3>DÜZENLE</h3>
+        $('mContent').innerHTML = `<h3>ÜRÜN ADINI DÜZENLE</h3>
             <input type="text" id="edName" value="${escapeHtml(item.name)}">
+            <div class="modal-btns"><button class="btn-ok" id="btnSaveName">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
+        $('gModal').style.display = 'flex';
+        const nameInp = $('edName');
+        // Klavye otomatik açılmasın diye blur
+        setTimeout(() => nameInp.blur(), 10);
+        
+        const save = () => { 
+            currentList[i].name = nameInp.value.trim().toUpperCase(); 
+            sync(); 
+            closeGModal(); 
+        };
+        $('btnSaveName').onclick = save;
+        nameInp.onkeydown = e => { if(e.key === 'Enter') save(); };
+    }
+
+    // YENİ: Sadece fiyat modalı (0-9 butonlu)
+    function openPriceModal(i) {
+        document.body.classList.add('modal-open');
+        const item = currentList[i];
+        $('mContent').className = "modal-content small-modal";
+        $('mContent').innerHTML = `<h3>FİYAT GİR</h3>
             <input type="text" id="edPrice" value="${item.price || ''}" readonly placeholder="FİYAT (TL)">
             <div class="num-pad">
                 <button data-val="1">1</button><button data-val="2">2</button><button data-val="3">3</button>
@@ -637,9 +788,8 @@
                 <button data-val="7">7</button><button data-val="8">8</button><button data-val="9">9</button>
                 <button data-val=".">.</button><button data-val="0">0</button><button class="del-btn" data-val="DEL">⌫</button>
             </div>
-            <div class="modal-btns"><button class="btn-ok" id="btnSaveEdit">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
+            <div class="modal-btns"><button class="btn-ok" id="btnSavePrice">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">İPTAL</button></div>`;
         $('gModal').style.display = 'flex';
-        const nameInp = $('edName');
         const priceInp = $('edPrice');
         
         const updatePrice = (val) => {
@@ -656,27 +806,59 @@
         });
         
         const save = () => { 
-            currentList[i].name = nameInp.value.trim().toUpperCase(); 
             currentList[i].price = parseFloat(priceInp.value) || 0; 
             sync(); 
             closeGModal(); 
         };
-        $('btnSaveEdit').onclick = save;
-        nameInp.onkeydown = e => { if(e.key === 'Enter') save(); };
+        $('btnSavePrice').onclick = save;
     }
 
+    // YENİ: Bakiye modalı (0-9 butonlu, klavye yok)
     window.openBudgetModal = function() {
         document.body.classList.add('modal-open');
-        const currentTotal = parseFloat($('total-value-display').innerText);
+        const currentTotal = parseFloat($('total-value-display').innerText.replace(' TL', '').replace(',', '.'));
         $('mContent').className = "modal-content small-modal";
-        $('mContent').innerHTML = `<h3>BAKİYE HESABI</h3><input type="number" id="budgetInput" placeholder="CEBİNDEKİ PARA" value="${userBudget || ''}"><div id="resultCalc" style="text-align:center; font-weight:900; font-size:18px; margin:6px 0;"></div><div class="modal-btns"><button class="btn-ok" id="btnSaveBudget">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">KAPAT</button></div>`;
+        $('mContent').innerHTML = `<h3>BAKİYE HESABI</h3>
+            <input type="text" id="budgetInput" readonly placeholder="CEBİNDEKİ PARA" value="${userBudget || ''}">
+            <div class="num-pad">
+                <button data-val="1">1</button><button data-val="2">2</button><button data-val="3">3</button>
+                <button data-val="4">4</button><button data-val="5">5</button><button data-val="6">6</button>
+                <button data-val="7">7</button><button data-val="8">8</button><button data-val="9">9</button>
+                <button data-val=".">.</button><button data-val="0">0</button><button class="del-btn" data-val="DEL">⌫</button>
+            </div>
+            <div id="resultCalc" style="text-align:center; font-weight:900; font-size:18px; margin:6px 0;"></div>
+            <div class="modal-btns"><button class="btn-ok" id="btnSaveBudget">KAYDET</button><button class="btn-cancel" onclick="closeGModal()">KAPAT</button></div>`;
         $('gModal').style.display = 'flex';
         const bInp = $('budgetInput');
-        const update = () => { const b = parseFloat(bInp.value) || 0; const k = b - currentTotal; $('resultCalc').innerText = `KALAN: ${k.toFixed(2)} TL`; $('resultCalc').style.color = k < 0 ? 'var(--danger)' : '#15803d'; };
-        bInp.oninput = update;
-        bInp.onkeydown = e => { if(e.key === 'Enter') { userBudget = parseFloat(bInp.value) || 0; sync(); closeGModal(); } };
-        update();
-        $('btnSaveBudget').onclick = () => { userBudget = parseFloat(bInp.value) || 0; sync(); closeGModal(); };
+        
+        const updateCalc = () => { 
+            const b = parseFloat(bInp.value) || 0; 
+            const k = b - currentTotal; 
+            $('resultCalc').innerText = `KALAN: ${k.toFixed(2)} TL`; 
+            $('resultCalc').style.color = k < 0 ? 'var(--danger)' : '#15803d'; 
+        };
+        
+        const updateBudgetVal = (val) => {
+            if(val === 'DEL') {
+                bInp.value = bInp.value.slice(0, -1);
+            } else {
+                if(bInp.value.includes('.') && val === '.') return;
+                bInp.value += val;
+            }
+            updateCalc();
+        };
+        
+        document.querySelectorAll('.num-pad button').forEach(btn => {
+            btn.onclick = () => updateBudgetVal(btn.dataset.val);
+        });
+        
+        updateCalc();
+        $('btnSaveBudget').onclick = () => { 
+            userBudget = parseFloat(bInp.value) || 0; 
+            sync(); 
+            closeGModal(); 
+            updateTotalAndBudget(); 
+        };
     };
 
     $('openFavs').onclick = () => { 
@@ -773,7 +955,6 @@
         favSearchInput.oninput = function() {
             favSearchQuery = this.value;
             favListScrollPos = 0;
-            // Sadece listeyi yeniden çiz, modalı değil
             renderList();
         };
 
@@ -782,7 +963,6 @@
             favDeleteMode = !favDeleteMode; 
             selectedFavs.clear();
             favListScrollPos = 0;
-            // Sadece listeyi yeniden çiz
             renderList();
         };
 
