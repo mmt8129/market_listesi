@@ -15,13 +15,13 @@
     <style>
         :root { 
             --bg: #ffffff; 
-            --card: #ffffff; 
+            --card: #f0f0f0; 
             --accent: #1e3a8a; 
             --success: #15803d; 
             --danger: #dc3545; 
-            --text: #2c3e4e; 
-            --shadow-light: rgba(0,0,0,0.08);
-            --shadow-dark: rgba(0,0,0,0.15);
+            --text: #000000; 
+            --light-border: #ffffff;
+            --dark-border: #a0a0a0;
         }
         * { box-sizing: border-box; }
         body { 
@@ -49,7 +49,7 @@
         }
         
         .top-fixed-bar { 
-            background: var(--bg); 
+            background: #ffffff; 
             padding: 8px 10px; 
             border-bottom: 2px solid #1e3a8a; 
             z-index: 100; 
@@ -119,7 +119,7 @@
             padding: 8px 12px; 
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
             -webkit-overflow-scrolling: touch;
         }
         
@@ -128,24 +128,24 @@
             position: relative;
         }
         
+        /* ANA KART - Windows XP 3D Tarzı */
         .item-card { 
             width: 100%;
             display: flex;
             background: #f0f0f0; /* Açık gri */
             border-radius: 6px;
-            border: 2px solid #ffffff;
-            border-right-color: #a0a0a0;
-            border-bottom-color: #a0a0a0;
+            border: 2px solid var(--light-border);
+            border-right-color: var(--dark-border);
+            border-bottom-color: var(--dark-border);
             box-shadow: 
-                inset 1px 1px 0px #ffffff,
-                inset -1px -1px 0px #a0a0a0;
+                inset 1px 1px 0px var(--light-border),
+                inset -1px -1px 0px var(--dark-border);
             transition: all 0.05s ease;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             height: 52px;
             align-items: stretch;
             overflow: hidden;
-            margin-bottom: 6px;
         }
         
         .item-name-area {
@@ -156,8 +156,8 @@
             font-size: 15px;
             font-weight: 700;
             color: #000000;
-            border-right: 2px solid #ffffff;
-            border-right-color: #a0a0a0;
+            border-right: 2px solid var(--light-border);
+            border-right-color: var(--dark-border);
             background: #f0f0f0;
             text-transform: uppercase;
             word-break: break-word;
@@ -172,13 +172,21 @@
             font-size: 14px;
             font-weight: 900;
             padding: 0 8px;
-            border-left: 2px solid #ffffff;
+            border-left: 2px solid var(--light-border);
             transition: all 0.05s ease;
         }
         
-        /* Fiyat yok (0 TL) - YEŞİL ve KABARTMALI (Yukarı kalkık) */
+        /* FİYAT YOK (0 TL) - TÜM KART YUKARI KALKIŞ (YEŞİL SAĞ) */
+        .item-card.price-zero {
+            border: 2px solid var(--light-border);
+            border-right-color: var(--dark-border);
+            border-bottom-color: var(--dark-border);
+            box-shadow: 
+                inset 2px 2px 0px var(--light-border),
+                inset -2px -2px 0px var(--dark-border);
+        }
         .item-card.price-zero .item-price-area {
-            background: #15803d;
+            background: var(--success);
             color: white;
             border-left-color: #4ade80;
             border-right: 2px solid #0f5a2a;
@@ -187,18 +195,23 @@
                 inset 2px 2px 0px #4ade80,
                 inset -2px -2px 0px #0f5a2a;
         }
-        .item-card.price-zero {
-            border: 2px solid #ffffff;
-            border-right-color: #a0a0a0;
-            border-bottom-color: #a0a0a0;
-            box-shadow: 
-                inset 2px 2px 0px #ffffff,
-                inset -2px -2px 0px #a0a0a0;
+        .item-card.price-zero .item-name-area {
+            border-right: 2px solid var(--light-border);
+            border-right-color: var(--dark-border);
         }
         
-        /* Fiyat var - KIRMIZI ve BASILMIŞ (İçe çökük) */
+        /* FİYAT VAR - TÜM KART İÇE BASILMIŞ (KIRMIZI SAĞ) */
+        .item-card.price-set {
+            border: 2px solid var(--dark-border);
+            border-right-color: var(--light-border);
+            border-bottom-color: var(--light-border);
+            box-shadow: 
+                inset -2px -2px 0px var(--dark-border),
+                inset 2px 2px 0px var(--light-border);
+            transform: translateY(1px);
+        }
         .item-card.price-set .item-price-area {
-            background: #dc3545;
+            background: var(--danger);
             color: white;
             border-left-color: #b02a37;
             border-right: 2px solid #f8d7da;
@@ -207,28 +220,25 @@
                 inset -2px -2px 0px #b02a37,
                 inset 2px 2px 0px #f8d7da;
         }
-        .item-card.price-set {
-            border: 2px solid #a0a0a0;
-            border-right-color: #ffffff;
-            border-bottom-color: #ffffff;
-            box-shadow: 
-                inset -2px -2px 0px #a0a0a0,
-                inset 2px 2px 0px #ffffff;
+        .item-card.price-set .item-name-area {
+            border-right: 2px solid var(--dark-border);
+            border-right-color: var(--light-border);
         }
         
+        /* Silme modu seçimi */
         .item-card.selected { 
-            border: 2px solid var(--accent); 
+            border: 3px solid var(--accent); 
         }
         .item-card.selected::after { 
             content: '✕'; 
             position: absolute; 
-            top: -2px; 
-            right: 80px; 
+            top: -4px; 
+            right: 85px; 
             color: var(--accent); 
             font-size: 18px; 
             font-weight: 900; 
             line-height: 1;
-            background: white;
+            background: #f0f0f0;
             padding: 0 4px;
             border-radius: 4px;
         }
@@ -296,7 +306,7 @@
         }
 
         .stats-mini div { font-size: 11px; font-weight: 800; color: #64748b; }
-        .stats-mini div:last-child { font-size: 15px; color: var(--text); }
+        .stats-mini div:last-child { font-size: 15px; color: #000000; }
 
         .modal { 
             position: fixed; 
@@ -311,6 +321,11 @@
             z-index: 2000; 
             -webkit-tap-highlight-color: transparent;
         }
+		
+		.modal-content { max-height: 70vh; } /* Eskiden 62vh idi */
+.fav-row { padding: 3px 6px; min-height: 30px; font-size: 12px; }
+.fav-row .custom-checkbox { width: 18px; height: 18px; }
+		
         .modal-content { 
             background: #ffffff;
             width: 92%; 
@@ -341,7 +356,7 @@
             gap: 8px; 
             font-weight: 800; 
             text-transform: uppercase; 
-            color: var(--text); 
+            color: #000000; 
             font-size: 13px;
             -webkit-tap-highlight-color: transparent;
             cursor: pointer;
@@ -390,7 +405,7 @@
             font-weight: 700;
             outline: none;
             font-family: inherit;
-            color: var(--text);
+            color: #000000;
             margin-bottom: 5px;
             -webkit-appearance: none;
             flex-shrink: 0;
@@ -461,7 +476,7 @@
         }
         
         h3 { color: var(--accent); margin: 0 0 8px 0; font-size: 17px; flex-shrink: 0; }
-        p { color: var(--text); margin: 5px 0; }
+        p { color: #000000; margin: 5px 0; }
 
         .container::-webkit-scrollbar,
         .fav-list-area::-webkit-scrollbar { width: 3px; }
@@ -482,7 +497,7 @@
             font-size: 20px;
             font-weight: 900;
             background: #f3f4f6;
-            color: var(--text);
+            color: #000000;
             cursor: pointer;
             -webkit-tap-highlight-color: transparent;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -543,7 +558,7 @@
         </div>
         <div class="stats-mini">
             <div>TOPLAM ÜRÜN</div>
-            <div style="font-size: 15px; color: var(--text);" id="total-items-count">0</div>
+            <div style="font-size: 15px; color: #000000;" id="total-items-count">0</div>
         </div>
     </div>
 </div>
@@ -664,7 +679,7 @@
                 } else openPriceModal(realIndex); 
             };
             
-            // Ana kartın boş kısmına tıklayınca isim düzenleme (opsiyonel)
+            // Ana kartın boş kısmına tıklayınca isim düzenleme
             card.onclick = (e) => {
                 if(e.target === card) {
                     if(deleteMode) { 
@@ -753,7 +768,7 @@
         inp.onkeydown = e => { if(e.key === 'Enter') save(); };
     };
 
-    // YENİ: Sadece isim düzenleme modalı (klavye açılmaz)
+    // Sadece isim düzenleme modalı (klavye otomatik açılmaz)
     function openEditNameModal(i) {
         document.body.classList.add('modal-open');
         const item = currentList[i];
@@ -775,7 +790,7 @@
         nameInp.onkeydown = e => { if(e.key === 'Enter') save(); };
     }
 
-    // YENİ: Sadece fiyat modalı (0-9 butonlu)
+    // Sadece fiyat modalı (0-9 butonlu)
     function openPriceModal(i) {
         document.body.classList.add('modal-open');
         const item = currentList[i];
@@ -813,7 +828,7 @@
         $('btnSavePrice').onclick = save;
     }
 
-    // YENİ: Bakiye modalı (0-9 butonlu, klavye yok)
+    // Bakiye modalı (0-9 butonlu, klavye yok)
     window.openBudgetModal = function() {
         document.body.classList.add('modal-open');
         const currentTotal = parseFloat($('total-value-display').innerText.replace(' TL', '').replace(',', '.'));
