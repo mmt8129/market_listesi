@@ -1113,6 +1113,7 @@
         }, 350);
     };
 
+    // SEÇİLİ SİL butonu (düzeltildi)
     $('menuDelQuick').onclick = () => {
         closeMenu();
         setTimeout(() => {
@@ -1122,6 +1123,22 @@
             $('mainWrapper').style.opacity = "0.7"; 
             render(); 
         }, 350);
+    };
+
+    // Silme modundaki onay ve iptal butonları (düzeltildi)
+    $('cancelDel').onclick = () => { 
+        deleteMode = false; 
+        $('deleteControls').style.display = 'none'; 
+        $('mainWrapper').style.opacity = "1"; 
+        render(); 
+    };
+    $('confirmDel').onclick = () => { 
+        currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); 
+        deleteMode = false; 
+        $('deleteControls').style.display = 'none'; 
+        $('mainWrapper').style.opacity = "1"; 
+        sync(); 
+        render();
     };
 
     $('openFavs').onclick = () => { 
@@ -1280,19 +1297,6 @@
         $('btnCancelFav').onclick = () => { $('mContent').className = tempClass; renderFavModal(); };
     }
 
-    $('cancelDel').onclick = () => { 
-        deleteMode = false; 
-        $('deleteControls').style.display = 'none'; 
-        $('mainWrapper').style.opacity = "1"; 
-        render(); 
-    };
-    $('confirmDel').onclick = () => { 
-        currentList = currentList.filter((_, i) => !selectedForDelete.has(i)); 
-        deleteMode = false; 
-        $('deleteControls').style.display = 'none'; 
-        $('mainWrapper').style.opacity = "1"; 
-        sync(); 
-    };
 </script>
 </body>
 </html>
