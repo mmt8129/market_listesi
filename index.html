@@ -911,8 +911,7 @@
             sugBox.querySelectorAll('.sug-item').forEach(el => {
                 el.onclick = () => {
                     inp.value = el.dataset.name;
-                    // Öneriden seçince tarih ve fiyatı da kaydetmek için hidden input mantığı kuruyoruz
-                    // Ama direkt ekleme yaparken kullanacağız.
+                    // Öneriden seçince tarih ve fiyatı da kaydetmek için hidden mantık
                     sugBox.style.display = 'none';
                 };
             });
@@ -931,8 +930,8 @@
                     currentList.push({
                         name: n, 
                         price: 0, 
-                        lastDate: favItem.lastDate, 
-                        lastPrice: favItem.lastPrice
+                        lastDate: favItem.lastDate || null, 
+                        lastPrice: favItem.lastPrice || 0
                     });
                 } else {
                     currentList.push({name: n, price: 0});
@@ -1279,8 +1278,8 @@
                         currentList.push({
                             name: favItem.name, 
                             price: 0, 
-                            lastDate: favItem.lastDate, 
-                            lastPrice: favItem.lastPrice
+                            lastDate: favItem.lastDate || null, 
+                            lastPrice: favItem.lastPrice || 0
                         });
                     }
                 });
