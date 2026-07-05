@@ -901,10 +901,18 @@
             const matches = favList.filter(f => f.name.toUpperCase().includes(val));
             if(matches.length === 0) { sugBox.style.display = 'none'; return; }
             sugBox.style.display = 'block';
-            sugBox.innerHTML = matches.map(m => `<div class="sug-item" data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)}</div>`).join('');
+            sugBox.innerHTML = matches.map(m => {
+                let extra = '';
+                if (m.lastDate && m.lastPrice && m.lastPrice > 0) {
+                    extra = ` – ${m.lastDate} = ${m.lastPrice} TL`;
+                }
+                return `<div class="sug-item" data-name="${escapeHtml(m.name)}" data-lastdate="${escapeHtml(m.lastDate || '')}" data-lastprice="${m.lastPrice || 0}">${escapeHtml(m.name)}${extra}</div>`;
+            }).join('');
             sugBox.querySelectorAll('.sug-item').forEach(el => {
                 el.onclick = () => {
                     inp.value = el.dataset.name;
+                    // Öneriden seçince tarih ve fiyatı da kaydetmek için hidden input mantığı kuruyoruz
+                    // Ama direkt ekleme yaparken kullanacağız.
                     sugBox.style.display = 'none';
                 };
             });
@@ -913,7 +921,26 @@
         inp.onfocus = updateSuggestions;
         inp.onblur = () => setTimeout(() => { sugBox.style.display = 'none'; }, 200);
         
-        const save = () => { const n = inp.value.trim().toUpperCase(); if(n) { currentList.push({name: n, price: 0}); sync(); } closeGModal(); };
+        const save = () => { 
+            const n = inp.value.trim().toUpperCase(); 
+            if(n) { 
+                // Favorilerde var mı kontrol et
+                const favItem = favList.find(f => f.name === n);
+                if (favItem) {
+                    // Favoride varsa, son fiyat ve tarihi de aktar
+                    currentList.push({
+                        name: n, 
+                        price: 0, 
+                        lastDate: favItem.lastDate, 
+                        lastPrice: favItem.lastPrice
+                    });
+                } else {
+                    currentList.push({name: n, price: 0});
+                }
+                sync(); 
+            } 
+            closeGModal(); 
+        };
         $('btnSaveAdd').onclick = save;
         inp.onkeydown = e => { if(e.key === 'Enter') save(); };
     };
@@ -1113,7 +1140,6 @@
         }, 350);
     };
 
-    // SEÇİLİ SİL butonu (düzeltildi)
     $('menuDelQuick').onclick = () => {
         closeMenu();
         setTimeout(() => {
@@ -1125,7 +1151,7 @@
         }, 350);
     };
 
-    // Silme modundaki onay ve iptal butonları (düzeltildi)
+    // Silme modundaki onay ve iptal butonları
     $('cancelDel').onclick = () => { 
         deleteMode = false; 
         $('deleteControls').style.display = 'none'; 
@@ -1137,22 +1163,8 @@
         deleteMode = false; 
         $('deleteControls').style.display = 'none'; 
         $('mainWrapper').style.opacity = "1"; 
-        sync(); 
+        sync();
         render();
-    };
-
-    $('openFavs').onclick = () => { 
-        favDeleteMode = false; 
-        favSearchQuery = ''; 
-        selectedFavs.clear();
-        favListScrollPos = 0;
-        currentList.forEach(item => {
-            const favIndex = favList.findIndex(f => f.name === item.name);
-            if(favIndex !== -1) {
-                selectedFavs.add(favIndex);
-            }
-        });
-        renderFavModal(); 
     };
 
     function getFilteredFavs() {
@@ -1259,6 +1271,7 @@
                 syncFavs(); 
                 renderList();
             } else { 
+                // Seçili favorileri ana listeye ekle
                 selectedIdx.forEach(idx => {
                     const favItem = favList[idx];
                     const alreadyExists = currentList.some(item => item.name === favItem.name);
