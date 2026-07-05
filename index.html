@@ -160,7 +160,7 @@
         }
         
         .item-price-area {
-            width: 120px; /* GENİŞLETİLDİ */
+            width: 120px;
             flex-shrink: 0;
             display: flex;
             flex-direction: column;
@@ -234,7 +234,7 @@
             content: '✕'; 
             position: absolute; 
             top: -4px; 
-            right: 120px; /* GENİŞLETİLDİ (120px'e uygun) */
+            right: 120px;
             color: var(--accent); 
             font-size: 18px; 
             font-weight: 900; 
@@ -366,7 +366,7 @@
             min-height: 38px;
         }
         .fav-row .fav-price-info {
-            font-size: 13px; /* BÜYÜTÜLDÜ */
+            font-size: 13px;
             font-weight: 800;
             color: #64748b;
             margin-left: auto;
@@ -626,7 +626,19 @@
         isReady = true; $('loading-screen').style.display = 'none'; render();
     });
 
-    db.ref('v5_app_state/favorites').on('value', snap => { favList = snap.val() || []; });
+    db.ref('v5_app_state/favorites').on('value', snap => { 
+        const raw = snap.val();
+        if (raw) {
+            favList = raw.map(item => {
+                if (typeof item === 'string') {
+                    return { name: item, lastPrice: 0, lastDate: null };
+                }
+                return item;
+            });
+        } else {
+            favList = [];
+        }
+    });
 
     function sync() { if(!isReady) return; db.ref('v5_app_state/current').set({id: Date.now(), data: currentList, budget: userBudget}); }
     function syncFavs() { db.ref('v5_app_state/favorites').set(favList); }
@@ -769,10 +781,10 @@
         const updateSuggestions = () => {
             const val = inp.value.trim().toUpperCase();
             if(val.length === 0 || favList.length === 0) { sugBox.style.display = 'none'; return; }
-            const matches = favList.filter(f => f.toUpperCase().includes(val));
+            const matches = favList.filter(f => f.name.toUpperCase().includes(val));
             if(matches.length === 0) { sugBox.style.display = 'none'; return; }
             sugBox.style.display = 'block';
-            sugBox.innerHTML = matches.map(m => `<div class="sug-item" data-name="${escapeHtml(m)}">${escapeHtml(m)}</div>`).join('');
+            sugBox.innerHTML = matches.map(m => `<div class="sug-item" data-name="${escapeHtml(m.name)}">${escapeHtml(m.name)}</div>`).join('');
             sugBox.querySelectorAll('.sug-item').forEach(el => {
                 el.onclick = () => {
                     inp.value = el.dataset.name;
@@ -810,7 +822,7 @@
         nameInp.onkeydown = e => { if(e.key === 'Enter') save(); };
     }
 
-    // Fiyat modalı (tarih ve son fiyat gösterimi eklendi)
+    // Fiyat modalı
     function openPriceModal(i) {
         document.body.classList.add('modal-open');
         const item = currentList[i];
@@ -848,14 +860,24 @@
         const save = () => { 
             const newPrice = parseFloat(priceInp.value) || 0;
             currentList[i].price = newPrice;
-            // Son fiyat ve tarihi güncelle
+            
             if (newPrice > 0) {
                 const now = new Date();
                 const day = String(now.getDate()).padStart(2, '0');
                 const month = String(now.getMonth() + 1).padStart(2, '0');
                 const year = now.getFullYear();
-                currentList[i].lastDate = day + '-' + month + '-' + year;
+                const dateStr = day + '-' + month + '-' + year;
+                
+                currentList[i].lastDate = dateStr;
                 currentList[i].lastPrice = newPrice;
+                
+                // Favorilerde de güncelle
+                const favIndex = favList.findIndex(f => f.name === currentList[i].name);
+                if (favIndex !== -1) {
+                    favList[favIndex].lastDate = dateStr;
+                    favList[favIndex].lastPrice = newPrice;
+                    syncFavs();
+                }
             }
             sync(); 
             closeGModal(); 
@@ -918,7 +940,7 @@
         favListScrollPos = 0;
         
         currentList.forEach(item => {
-            const favIndex = favList.indexOf(item.name);
+            const favIndex = favList.findIndex(f => f.name === item.name);
             if(favIndex !== -1) {
                 selectedFavs.add(favIndex);
             }
@@ -930,7 +952,7 @@
     function getFilteredFavs() {
         if(!favSearchQuery) return favList;
         const q = favSearchQuery.toUpperCase();
-        return favList.filter(fav => fav.toUpperCase().includes(q));
+        return favList.filter(fav => fav.name.toUpperCase().includes(q));
     }
 
     function renderFavModal() {
@@ -972,18 +994,16 @@
                 const realIndex = favList.indexOf(fav);
                 const isChecked = selectedFavs.has(realIndex);
                 
-                // Fav listesinde ürünün son fiyat bilgisini bul (currentList içinde ara)
-                const itemInList = currentList.find(item => item.name === fav);
                 let priceInfo = '';
-                if (itemInList && itemInList.lastDate && itemInList.lastPrice && itemInList.lastPrice > 0) {
-                    priceInfo = itemInList.lastDate + ' = ' + itemInList.lastPrice + ' TL';
+                if (fav.lastDate && fav.lastPrice && fav.lastPrice > 0) {
+                    priceInfo = fav.lastDate + ' = ' + fav.lastPrice + ' TL';
                 }
                 
                 const div = document.createElement('div'); 
                 div.className = 'fav-row';
                 div.innerHTML = `
                     <div class="custom-checkbox ${isChecked ? 'checked' : ''}" data-index="${realIndex}"></div>
-                    <label>${escapeHtml(fav)}</label>
+                    <label>${escapeHtml(fav.name)}</label>
                     ${priceInfo ? `<span class="fav-price-info">${priceInfo}</span>` : ''}`;
                 
                 div.onclick = function(e) {
@@ -1034,16 +1054,15 @@
                 renderList();
             } else { 
                 selectedIdx.forEach(idx => {
-                    const itemName = favList[idx];
-                    const alreadyExists = currentList.some(item => item.name === itemName);
+                    const favItem = favList[idx];
+                    const alreadyExists = currentList.some(item => item.name === favItem.name);
                     if(!alreadyExists) { 
-                        // Favoriden eklerken, eğer o isimde bir ürünün geçmiş verisi varsa, onu da taşı
-                        const existingFavData = currentList.find(item => item.name === itemName);
-                        if (existingFavData) {
-                            currentList.push({name: itemName, price: 0, lastDate: existingFavData.lastDate, lastPrice: existingFavData.lastPrice});
-                        } else {
-                            currentList.push({name: itemName, price: 0});
-                        }
+                        currentList.push({
+                            name: favItem.name, 
+                            price: 0, 
+                            lastDate: favItem.lastDate, 
+                            lastPrice: favItem.lastPrice
+                        });
                     }
                 });
                 sync(); 
@@ -1058,7 +1077,15 @@
         $('mContent').className = "modal-content small-modal";
         $('mContent').innerHTML = `<h3>FAVORİ EKLE</h3><input type="text" id="newFavName" placeholder="ÜRÜN ADI..."><div class="modal-btns"><button class="btn-ok" id="btnConfirmFav">EKLE</button><button class="btn-cancel" id="btnCancelFav">İPTAL</button></div>`;
         const inp = $('newFavName');
-        const confirm = () => { const n = inp.value.trim().toUpperCase(); if(n) { favList.push(n); syncFavs(); } $('mContent').className = tempClass; renderFavModal(); };
+        const confirm = () => { 
+            const n = inp.value.trim().toUpperCase(); 
+            if(n) { 
+                favList.push({ name: n, lastPrice: 0, lastDate: null }); 
+                syncFavs(); 
+            } 
+            $('mContent').className = tempClass; 
+            renderFavModal(); 
+        };
         $('btnConfirmFav').onclick = confirm;
         inp.onkeydown = e => { if(e.key === 'Enter') confirm(); };
         $('btnCancelFav').onclick = () => { $('mContent').className = tempClass; renderFavModal(); };
