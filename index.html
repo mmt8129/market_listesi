@@ -974,7 +974,7 @@
             : '';
         
         $('mContent').className = "modal-content small-modal";
-        $('mContent').innerHTML = `<h3 style="text-align:center;">FİYAT GİR</h3>
+        $('mContent').innerHTML = `<h3 style="text-align:center;">FİYAT GİR - ${escapeHtml(item.name)}</h3>
             ${historyHtml}
             <input type="text" id="edPrice" value="${item.price || ''}" readonly placeholder="FİYAT (TL)">
             <div class="num-pad">
