@@ -650,19 +650,19 @@
     </div>
     <button class="side-menu-item" id="menuClearList">
         <span class="icon">🗑️</span>
-        <span class="label">TÜMÜNÜ TEMİZLE</span>
+        <span class="label">TÜM LİSTEYİ SİL</span>
     </button>
     <button class="side-menu-item" id="menuFavs">
         <span class="icon">⭐</span>
-        <span class="label">FAVORİLER</span>
+        <span class="label">KAYDEDİLENLER</span>
     </button>
     <button class="side-menu-item" id="menuBulkList">
         <span class="icon">📋</span>
-        <span class="label">TOPLU LİSTE</span>
+        <span class="label">YAZARAK LİSTE OLUŞTUR</span>
     </button>
     <button class="side-menu-item" id="menuDelQuick">
         <span class="icon">✂️</span>
-        <span class="label">SEÇİLİ SİL</span>
+        <span class="label">SEÇİLENLERİ SİL</span>
     </button>
 </div>
 
@@ -1108,7 +1108,7 @@
         setTimeout(() => {
             document.body.classList.add('modal-open');
             $('mContent').className = "modal-content small-modal";
-            $('mContent').innerHTML = `<h3>LİSTE TEMİZLENSİN Mİ?</h3><p style="text-align:center; font-weight:800; color:var(--danger);">TÜM ÜRÜNLER SİLİNECEK!</p><div class="modal-btns"><button class="btn-ok" id="confirmClear" style="background:var(--danger);">SİL</button><button class="btn-cancel" onclick="closeGModal()">VAZGEÇ</button></div>`;
+            $('mContent').innerHTML = `<h3>LİSTE TEMİZLENSİN Mİ?</h3><p style="text-align:center; font-weight:800; color:var(--danger);">TÜM ANA EKRAN LİSTESİ!</p><div class="modal-btns"><button class="btn-ok" id="confirmClear" style="background:var(--danger);">SİL</button><button class="btn-cancel" onclick="closeGModal()">VAZGEÇ</button></div>`;
             $('gModal').style.display = 'flex';
             $('confirmClear').onclick = () => { currentList = []; sync(); closeGModal(); };
         }, 350);
@@ -1186,13 +1186,13 @@
         $('mContent').className = "modal-content";
         $('mContent').innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px;">
-                <h3 style="margin:0; font-size:16px;">FAVORİLER</h3>
+                <h3 style="margin:0; font-size:16px;">KAYDEDİLENLER</h3>
                 <div style="display:flex; gap:5px;">
                     <button class="circle-btn btn-plus" id="addFavItem" style="width:32px; height:32px;">+</button>
                     <button class="circle-btn btn-minus" id="toggleFavDel" style="width:32px; height:32px; background:${favDeleteMode?'var(--danger)':'#94a3b8'}">-</button>
                 </div>
             </div>
-            <input type="text" class="fav-search-bar" id="favSearchBar" placeholder="🔍 FAVORİ ARA...">
+            <input type="text" class="fav-search-bar" id="favSearchBar" placeholder="🔍 ARA...">
             <div class="fav-list-area" id="favListItems"></div>
             <div class="modal-btns">
                 <button class="btn-ok" id="addSelectedToMain">${favDeleteMode ? 'SEÇİLENLERİ SİL' : 'ANA LİSTEYE EKLE'}</button>
@@ -1297,7 +1297,7 @@
     function openAddFavModal() {
         const tempClass = $('mContent').className;
         $('mContent').className = "modal-content small-modal";
-        $('mContent').innerHTML = `<h3>FAVORİ EKLE</h3><input type="text" id="newFavName" placeholder="ÜRÜN ADI..."><div class="modal-btns"><button class="btn-ok" id="btnConfirmFav">EKLE</button><button class="btn-cancel" id="btnCancelFav">İPTAL</button></div>`;
+        $('mContent').innerHTML = `<h3>YENİ KAYIT EKLE</h3><input type="text" id="newFavName" placeholder="ÜRÜN ADI..."><div class="modal-btns"><button class="btn-ok" id="btnConfirmFav">EKLE</button><button class="btn-cancel" id="btnCancelFav">İPTAL</button></div>`;
         const inp = $('newFavName');
         const confirm = () => { 
             const n = inp.value.trim().toUpperCase(); 
